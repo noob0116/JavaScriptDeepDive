@@ -463,11 +463,226 @@
  
 
 
+//<<함수 표현식>>
+// var add = function(x,y) {                  //함수표현식에서는 함수이름을 생략할수있다.
+//     return x + y;
+// };
+// console.log(add(3,4));
+
+//<<기명 함수 표현식>>
+// var add = function foo(x,y){
+//     return x + y;
+// };
+// console.log(add(3,4));    //함수를 호출할때는 식별자의 이름으로 호출해야한다. 함수의 이름은 함수의 내부에서만 참조할수있다.
+// console.log(foo(3,4));    //함수외부에서 함수의 이름으로 호출하려고 하면 ReferenceError 가 발생한다.
+
+
+
+//<<<함수 생성 시점과 함수 호이스팅>>>
+//함수선언문은 모든 선언문이 그렇듯 코드가 한 줄씩 순차적으로 실행되는 시점인 런타임 이전에 자바스크립트 엔진에 의해 먼저 실행된다. 
+// console.dir(add);                       //함수 선언문으로 정의한 함수는 함수 선언문 이전에 호출할 수 있다.
+// console.dir(sub);                       //함수 표현식으로 정의한 함수는 함수 표현식 이전에 호출할 수 없다.
+
+// console.log(add(2,5));
+// console.log(sub(2,5));
+
+// function add(x,y) {
+//     return x + y;
+// }
+// var sub = function (x,y) {
+//     return x - y;
+// };
+// 호이스팅 이란 함수 선언문이 코드의 선두로 끌어 올려진 것처럼 동작하는 자바스크립트 고유의 특징이다.
+// 변수 호이스팅과 함수 호이스팅은 비슷하지만 다른 차이점이 있다. 둘다 런타임 이전에 먼저 실행된다는 공통점이있다.
+// 둘의 차이점은 변수 호이스팅은 var 키워드로 선언된 변수가 undefined로 초기화 되고, 함수 선언문에 의해 정의된 함수의 호이스팅은
+// 함수 선언문을 통해 암묵적으로 생성된 식별자가 함수 객체로 초기화되면서 선언문 이전에 호출해도 함수 객체를 참조할수있다.
+// 변수 할당문의 값은 할당문이 실행되는 시점, 즉 런타임에 평가되므로 함수 표현식의 함수 리터럴도 할당문이 실행되는 시점에 
+// 평가되어 함수 객체가 된다. 따라서 함수 표현식으로 함수를 정의하면 함수 호이스팅이 발생하는 것이 아니라 변수 호이스팅이 발생한다.
 
 
 
 
+//<<<Function 생성자 함수>>>12.4.4
+//Function 생성자 함수로 함수를 생성하는 방식은 일반적이지 않으며 바람직하지도 않다. Function 함수는 클로저를 생성하지 않는 등
+//함수 선언문이나 함수 표현식으로 생성한 함수와 다르게 동작한다.
+// var add = new Function('x','y','return x + y');
+// console.log(add(2,5));
 
+
+
+
+//<<<화살표 함수>>>
+//ES6에서 도입된 함수로 function 키워드 대신 화살표 => 를 사용해 좀더 간략한 방법으로 함수를 선언할 수 있다.
+//화살표 함수는 항상 익명 함수로 정의한다.
+// const add = (x,y) => x + y;
+// console.log(add(2,5));
+
+
+
+
+//<<<함수의 매개변수는 함수 몸체 내부에서만 참조할 수 있다>>>
+//   function add(x,y) {
+//       console.log(x,y);
+//       return x + y;
+//   }
+//   add(2,5);
+//   console.log(x,y); //add 함수의 매개변수 x, y는 함수 몸체 내부에서만 참조할 수 있다.
+
+
+//<<매개변수보다 인수가 더 적은경우>>
+//인수가 할당되지않으면 매개변수의 값은 undefined 이다. 따라서 2 + undefined 이므로 NaN 이 반환된다.
+// function add(x,y) {
+//     return x + y;
+// }
+// console.log(add(2));
+
+
+//<<매개변수보다 인수가 더 많은경우>>
+//매겨변수의 수보다 초과된 인수는 무시된다.하지만 이것이 그냥 버려지는것은 아니고 arfuments 객체의 프로퍼티로 보관된다.
+// function add(x,y) {
+//     return x + y;
+// }
+// console.log(add(2, 5, 10));
+
+
+
+
+//<<<함수를 정의할 때 적절한 인수가 전달되었는지 확인할 필요가 있다>>>
+//자바스크립트 문법상 전혀 문제가 없다 
+// function add(x,y) {
+//     return x + y;
+// }
+// console.log(add(2));
+// console.log(add('a','b'));
+
+//<<자바스크립트의 경우 함수를 정의할 때 적절한 인수가 전달되었는지 확인할 필요가 있다.>>
+// function add(x,y) {
+//     if (typeof x !== 'number' || typeof y !== 'number') {
+//         throw new TypeError('인수는 모두 숫자 값이어야 합니다.');
+//     }
+//     return x + y;
+// }
+// console.log(add(2));
+// console.log(add('a','b'));
+
+
+//<<단축 평가를 사용해 매개변수에 기본값을 할당하는 방법도 있다.>>
+// function add(a,b,c) {
+//     a = a || 0;
+//     b = b || 0;
+//     c = c || 0;
+//     return a + b + c;
+// }
+// console.log(add(1, 2, 3));
+// console.log(add(1, 2));
+// console.log(add(1));
+// console.log(add());
+
+
+//<<ES6에서 도입된 매개변수 기본값을 사용하면 함수 내에서 수행하던 인수 체크 및 초기화를 간소화할 수 있다.>>
+// function add(a = 0, b = 0, c = 0) {
+//     return a + b + c;
+// }
+// console.log(add(1, 2, 3));
+// console.log(add(1, 2));
+// console.log(add(1));
+// console.log(add());
+
+
+
+
+//<<<반환문>>>
+//반환문은 두 가지 역할을 한다. 첫째, 반환문은 함수의 실행을 중단하고 함수 몸체를 빠져나간다. 따라서 반환문 이후에 다른 문이 존재하면 그 문은 실행되지 않고 무시된다. 둘째 반환문은 return 키워드 뒤에 오는 표현식을 평가해 반환한다. return 키워드 뒤에 반환값으로 사용할 표현식을 명시적으로 지정하지 않으면 undefined가 반환된다.
+// function multiply(x,y) {
+//     return x * y;
+//     console.log('실행되지 않는다');
+// }
+// console.log(multiply(3,5));
+
+
+//<<return 키워드와 반환값으로 사용할 표현식 사이에 줄바꿈이 있으면 세미콜론 자동삽입 기능에 의해 세미콜론이 추가된다.>>
+// function multiply(x,y) {
+//     return
+//     x * y;
+// }
+// console.log(multiply(3, 5)); //undefined
+
+
+
+
+//<<<참조에 의한 전달과 외부 상태의 변경>>>
+//이렇듯 외부참조에 의해 함수객체의 정보가 바뀌면 여러 문제가 생길수있다. 따라서 객체를 불변 객체로 만들어 사용하는 방법이 있다. 객체의 복사본을 새롭게 생성하는 비용은 들지만 객체를 마치 원시 값처럼 변경 불가능한 값으로 동작하게 만드는 것이다. 이러한 함수를 순수 함수라고 한다.
+// function changeVal(primitive, obj) {
+//     primitive += 100;
+//     obj.name = 'Kim';
+// }
+// var num = 100;
+// var person = { name: 'Lee'};
+
+// console.log(num);
+// console.log(person);
+
+//원시 값은 값 자체가 복사되어 전달되고 객체는 참조 값이 복사되어 전달된다.
+//원시 값은 변경 불가능한 값이고 객체는 변경 가능한 값이므로 원본이 훼
+// changeVal(num,person);
+//원시 값은 원본이 훼손되지 않는다.
+// console.log(num);
+//객체는 원본이 훼손된다.
+// console.log(person);
+
+
+
+//[[[[다향한 함수의 형태]]]]12.7
+
+
+
+//<<<즉시 실행 함수>>>12.7.1
+//함수 정의와 동시에 즉시 호출되는 함수를 즉시 실행 함수 라고 한다. 즉시 실행 함수는 단 한 번만 호출되며 다시 호출할 수 없다.
+//즉시 실행 함수는 함수 이름이 없는 익명 함수를 사용하는 것이 일반적이다.
+// (function (){
+//     var a = 3;
+//     var b = 5;
+//     return a * b;
+// }());             
+
+
+//<<기명 즉시 실행 함수>>
+// (function foo(){
+//     var a = 3;
+//     var b = 5;
+//     return a * b;
+// }());
+//그룹 연산자 내의 기명 함수는 함수 선언문이 아니라 함수 리터럴로 평가되며 함수 이름은 함수 몸체에서만 참조할 수 있는 식별자이므로 즉시 실행 함수를 다시 호출할 수는 없다.
+//foo(); //ReferenceError: foo is not defined
+
+
+//<<즉시 실행 함수는 반드시 그룹 연산자로 감싸야 한다.>>
+// function(){
+//     var a = 3;
+//     var b = 5;
+//     return a * b;
+//}();     //SyntaxError 함수 선언문은 함수이름을 생략할 수 없다.
+
+
+// function foo(){
+//     var a = 3;
+//     var b = 5;
+//     return a * b;
+// }();     //SyntaxError 자바스크립트의 세미콜론 자동 삽입 기능에 의해 함수 선언문이 끝나는 위치, 즉 함수 코드 블록의 닫는 중괄화 뒤에 ';'이 암묵적으로 추가되기 때문이다.
+
+
+//즉시 실행 함수도 일반 함수처럼 값을 반환할 수도
+// var res = (function(){
+//     var a = 3;
+//     var b = 5;
+//     return a * b;
+// }());
+// console.log(res);
+//인수를 전달할 수도 있다.
+// res = (function(a,b){
+//     return a * b;
+// }(3,5));
+// console.log(res);
 
 
 
