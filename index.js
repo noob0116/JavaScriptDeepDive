@@ -863,9 +863,9 @@ console.log(x,y);  //ReferenceError 발생
 //모든 식별자(변수 이름, 함수 이름, 클래스 이름 등)는 자신이 선언된 위치에 의해 다른 코드가 식별자 자신을 참조할 수 있는 유효 범위가 결정된다. 이를 스코프라 한다. 즉, 스코프는 식별자가 유효한 범위를 말한다.
 var var1 = 1; //코드의 가장 바깥 영역에서 선언한 변수
 
-if(true) {          //예시를 위해 쓴것일뿐 if문은 이런식으로 사용하지 못한다.
+if(true) {          
     var var2 = 2;   //코드 블록 내에서 선언한 변수
-    if(ture) {
+    if(true) {
         var var3 = 3;  //중첩된 코드 블록 내에서 선언한 변수
     }
 }
@@ -929,6 +929,331 @@ function bar() {
 }
 bar();     // local function foo
 
+
+
+//<<함수 레벨 스코프>>
+//c나 자바 등을 비롯한 대부분의 프로그래밍 언어는 함수 몸체만이 아니라 모든 코드 블록(if, for, while, try/catch 등)이 지역 스코프를 만든다.
+//이러한 특성을 블록 레벨 스코프라 한다. 하지만 var 키워드로 선언된 변수는 오로지 함수의 코드 블록(함수 몸체)만을 지역 스코프로 인정한다.
+//이러한 특성을 함수 레벨 스코프라 한다.
+
+//예제 1
+var x = 1;
+if(true) {
+//var 키워드로 선언된 변수는 함수의 코드 블록(함수 몸체)만을 지역 스코프로 인정한다.
+//함수 밖에서 var 키워드로 선언된 변수는 코드 블록 내에서 선언되었다 할지라도 모두 전역 변수다.
+//따라서 x는 전역 변수다. 이미 선언된 전역 변수 x가 있으므로 x변수는 중복 선언된다.
+//이는 의도치 않게 변수 값이 변경되는 부작용을 발생시킨다.
+    var x =10;
+}
+console.log(x);
+
+
+
+//예제 2
+var i = 10;
+//for 문에서 선언한 i는 전역 변수다. 이미 선언된 전역 변수 i가 있으므로 중복 선언된다.
+for(var i = 0; i < 5; i++) {
+    console.log(i);
+}
+console.log(i);   // 5
+
+
+
+//<<렉시컬 스코프>>
+//함수를 어디서 정의했는지에 따라 함수의 상위 스코프를 결정하는것을 렉시컬 스코프 또는 정적 스코프라 한다. 자바스크립트는 렉시컬 스코프를 따르므로 함수를 어디서 호출했는지가 아니라 함수를 어디서 정의했는지에 따라 상위 스코프를 결정한다. 함수가 호출된 위치는 상위 스코프 결정에 어떠한 영향도 주지 않는다. 즉, 함수의 상위 스코프는 언제나 자신이 정의된 스코프다.
+var x = 1;
+
+function foo() {
+    var x = 10;
+    bar();
+}
+
+function bar() {
+    console.log(x);
+}
+
+foo();
+bar();
+
+
+
+//<<<전역 변수의 문제점>>>14
+//전역 변수의 무분별한 사용은 위험하다. 전역 변수를 반드시 사용해야 할 이유를 찾지 못한다면 지역 변수를 사용해야 한다. 
+
+//<<지역 변수의 생명 주기>>14.1.1
+//전역 변수의 생명주기는 애플리케이션의 생명 주기와 같다. 하지만 함수 내부에서 선언된 지역 변수는 함수가 호출되면 생성되고 함수가 종료하면 소멸한다.
+function foo() {
+    var x = 'local';
+    console.log(x);
+    return x;
+}
+foo();
+console.log(x);   //ReferenceError: x is not defined
+
+
+
+//예제
+var x = 'global';
+
+function foo() {
+    console.log(x);         //이미 이 시점에 변수 x 는 선언되었고 undefined로 초기화되어 있다. 따라서 전역 변수 x를 참조하는 것이 아니라 지역 변수 x를 참조해 값을 출력한다. 즉, 지역 변수는 함수 전체에서 유효하다. 단 변수 할당문이 실해되기 이전까지는 undefined 값을 갖는다.
+    var x = 'local';       
+}
+
+foo();           //undefined
+console.log(x);
+//브라우저 환경에서 전역 객체는 window이므로 브라우저 환경에서 var 키워드로 선언한 전역 변수는 전역 객체 window의 프로퍼티다. 전역 객체 window는 웹페이지를 닫기 전까지 유효하다. 따라서 브라우저 환경에서 var 키워드로 선언한 전역 변수는 웹페이지를 닫을 때까지 유효하다. 즉 var 키워드로 선언한 전역 변수의 생명 주기는 전역 객체의 생명 주기와 일치한다.
+//자바스크립트의 가장 큰 문제점 중 하나는 파일이 분리되어 있다 해도 하나의 전역 스코프를 공유한다는 것이다. 따라서 다른 파일 내에서 동일한 이름으로 명명된 전역 변수나 전역 함수가 같은 스코프 내에 존재할 경우 예상치 못한 결과를 가져올 수 있다.
+
+
+//<<전역 변수의 사용을 억제하는 방법>>14.3
+//즉시 실행 함수 14.3.1
+//모든 코드를 즉시 실행 함수로 감싸면 모든 변수는 즉시 실행 함수의 지역 변수가 된다.
+(function() {
+    var foo = 10;     //즉시 실행 함수의 지역 변수
+    //...
+}());
+console.log(foo);    //ReferenceError: foo is not defined
+
+
+//네임스페이스 객체 14.3.2
+//전역에 네임스페이스 역할을 담당할 객체를 생성하고 전역 변수처럼 사용하고 시은 변수를 프로퍼티로 추가하는 방법이다.
+var MYAPP = {};
+MYAPP.name = 'Lee';
+console.log(MYAPP.name);
+//네임스페이스 객체에 또 다른 네임스페이스 객체를 프로퍼티로 추가해서 네임스페이스를 계층적으로 구성할 수도 있다.
+var MYAPP = {};
+MYAPP.person = {
+    name: 'Lee',
+    address: 'Seoul'
+};
+console.log(MYAPP.person.name);
+//네임스페이스를 분리해서 식별자 충돌을 방지하는 효과는 있으나 네임스페이스 객체 자체가 전역 변수에 할당되므로 그다지 유용해 보이지는 않는다.
+
+
+//모듈 패턴
+//모듈 패턴은 클래스를 모방해서 관련이 있는 변수와 함수를 모아 즉시 실행 함수로 감싸 하나의 모듈을 만든다. 모듈 패턴의 특징은 전역 변수의 억제는 물론 캡슐화까지 구현할 수 있다는 것이다.
+//자바스크립트는 public, private, protected 등의 접근 제한자를 제공하지 않는다. 모듈 패턴은 전역 네임스페이스의 오염을 막는 기능은 물론 한정적이기는 하지만 정보 은닉을 구현하기 위해 사용한다.
+
+var Counter = (function() {
+    //private 변수
+    var num = 0;
+
+    return {
+        increase() {
+            return ++num;
+        },
+        decrease() {
+            return --num;
+        }
+    };
+}());
+
+//private 변수는 외부로 노출되지 않는다.
+//console.log(Counter.num); //Undefined
+console.log(Counter.increase()); //1
+console.log(Counter.increase()); //2
+console.log(Counter.decrease()); //1
+console.log(Counter.decrease()); //0
+//위 예제의 즉시 실행 함수는 객체를 반환한다. 이 객체에는 외부에 노출하고 싶은 변수나 함수를 담아 반환한다. 이때 반환되는 객체의 프로퍼티는 외부에 노출되는 퍼블릭 멤버다. 외부로 노출하고 싶지 않은 변수나 함수는 반환하는 객체에 추가하지 않으면 외부에서 접근할 수 없는 프라이빗 멤버가 된다.
+
+
+//ES6 모듈 //14.3.4
+
+
+
+//<<<let, const 키워드와 블록 레벨 스코프>>>
+//var 키워드로 선언한 변수의 문제점
+//변수 중복 선언 허용
+var x = 1;
+var y = 1;
+// var 키워드로 선언된 변수는 같은 스코프 내에서 중복 선언을 허용한다.
+// 초기화문이 있는 변수 선언문은 자바스크립트 엔진에 의해 var 키워드가 없는 것처럼 동작한다.
+var x = 100;
+var y;     //초기화문이 없는 변수 선언문은 무시된다.
+console.log(x);  //100
+console.log(y);  //1
+
+
+
+//<<변수 호이스팅>> 15.1.3
+//이 시점에는 변수 호이스팅에 의해 이미 foo 변수가 선언되었다
+//변수 foo는 undefined로 초기화된다
+console.log(foo); //undefined
+
+//변수에 값을 할당
+foo = 123;
+
+console.log(foo); //123
+
+//변수 선언은 런타임 이전에 자바스크립트 엔진에 의해 암묵적으로 실행된다.
+var foo;
+
+
+
+//<<<let 키워드>>>15.2
+// 변수 중복 선언 금지 15.2.1
+var foo = 123;
+var foo = 456;
+let bar = 123;
+// let 이나 const 키워드로 선언된 변수는 같은 스코프 내에서 중복 선언을 허용하지 않는다.
+let bar = 456;  //SyntaxError: Identifier 'bar' has already been declared
+
+
+
+// 블록 레벨 스코프 15.2.2
+//var 키워드로 선언한 변수는 오로지 함수의 코드 블록만을 지역 스포크로 인정하는 함수 레벨 스코프를 따른다. 하지만 let 키워드로 선언한 변수는 모든 코드 블록(함수, if문, for 문, while 문, try/catch 문 등)을 지역 스코프로 인정하는 블록 레벨 스코프를 따른다.
+let foo = 1;   //전역 변수
+{
+    let foo = 2;   // 지역 변수
+    let bar = 3;   // 지역 변수
+}
+console.log(foo); //1
+console.log(bar); //ReferenceError: bar is not defined
+//let 키워드로 선언된 변수는 블록 레벨 스코프를 따른다. 따라서 위 예제의 코드 블록 내에서 선언된 foo 변수와 bar 변수는 지역 변수다. 전역에서 선언된 foo 변수와 코드 블록 내에서 선언된 foo 변수는 다른 별개의 변수다. 또한 bar 변수도 블록 레벨 스코프를 갖는 지역 변수다. 따라서 전역에서는 bar 변수를 참조할 수 없다. 함수도 코드 블록이므로 스코프를 만든다. 이때 함수 내의 코드 블록은 함수 레벨 스코프에 중첩된다.
+
+
+// 변수 호이스팅 15.2.3
+//var 키워드로 선언한 변수와 달리 let 키워드로 선언한 변수는 변수 호이스팅이 발생하지 않는 것처럼 동작한다.
+
+console.log(foo); //ReferenceError: Cannot access 'foo' before initialization
+let foo;            
+
+
+//let 키워드로 선얺나 변수는 "선언 단계"와 "초기화 단계"가 분리되어 진행된다. 즉, 런타임 이전에 자바스크립트 엔진에 의해 암묵적으로 선언 단계가 먼저 실행되지만 초기화 단계는 변수 선언문에 도달했을 때 실행된다.
+//런타임 이전에 선언 단계가 실행된다. 아직 변수가 초기화되지 않았다.
+//초기화 이전의 일시적 사각지대에서는 변수를 참조할 수 없다.
+console.log(foo);    //ReferenceError: Cannot access 'foo' before initialization
+
+let foo;             // 변수 선언문에서 초기화 단계가 실행된다.
+console.log(foo);    // undefined
+
+foo = 1;             // 할당문에서 할당 단계가 실행된다.
+console.log(foo);    // 1
+
+
+
+//<<전역 객체와 let>> 15.2.4
+//이 예제는 브라우저 환경에서 실행해야 한다.
+// 전역 변수
+var x = 1;
+
+// 암묵적 전역
+y = 2;
+// 전역 함수
+function foo() {}
+
+// var 키워드로 선언한 전역 변수는 전역 객체 window의 프로퍼티다.
+console.log(window.x); // 1
+// 전역 객체 window의 프로퍼티는 전역 변수처럼 사용할 수 있다.
+console.log(x); // 1
+
+// 암묵적 전역은 전역 객체 window의 프로퍼티다.
+console.log(window.y); // 2
+console.log(y);  // 2
+
+// 함수 선언문으로 정의한 전역 함수는 전역 객체 window의 프로퍼티다.
+console.log(window.foo);  // f foo() {}
+// 전역 객체 window의 프로퍼티는 전역 변수처럼 사용할 수 있다.
+console.log(foo); // f foo() {}
+
+
+// let 키워드로 선언한 전역 변수는 전역 객체의 프로퍼티가 아니다. 즉, window.foo와 같이 접근할 수 없다.
+// 이 예제는 브라우저 환경에서 실행해야 한다.
+let x = 1;
+
+//let, const 키워드로 선언한 전역 변수는 전역 객체 window의 프로퍼티가 아니다.
+console.log(window.x); // undefined
+console.log(x);
+
+
+
+
+// <<<const 키워드>>> 15.3
+// const 키워드는 상수를 선언하기 위해 사용한다. 하지만 반드시 상수만을 위해 사용하지는 않는다.
+
+// <<선언과 초기화>> 15.3.1
+// const 키워드로 선언한 변수는 반드시 선언과 동시에 초기화해야 한다.
+const foo = 1;
+
+const foo;  // SyntaxError: Missing initializer in const declaration
+
+
+// <<재할당 금지>> 15.3.2
+// var 또는 let 키워드로 선언한 변수는 재할당이 자유로우나 const 키워드로 선언한 변수는 재할당이 금지 된다.
+const foo = 1;
+foo = 2;    // TypeError: Assignment to constant variable.
+
+
+// <<상수>> 15.3.3
+// const 키워드로 선언한 변수에 원시 값을 할당한 경우 변수 값을 변경할 수 없다. 원시 값은 변경 불가능한 값 이므로 재할당 없이 값을 변경할 수 있는 방법이 없기 때문이다. 이러한 특징을 이용해 const 키워드를 상수를 표현하는데 사용하기도 한다.
+// 변수의 상대 개념인 상수는 재할당이 금지된 변수를 말한다. 상수도 값을 저장하기 위한 메모리 공간이 필요하므로 변수라고 할 수 있다. 단, 변수는 언제든지 재할당을 통해 변수 값을 변경할 수 있지만 상수는 재할당이 금지된다.
+// 상수는 상태 유지와 가독성, 유지보수의 편의를 위해 적극적으로 사용해야 한다.
+
+// <<예제>>
+let preTaxPrice = 100;
+
+// 세후 가격
+// 0.1의 의미를 명확히 알기 어렵기 때문에 가독성이 좋지 않다.
+let afterTaxPrice = preTaxPrice + (preTaxPrice * 0.1);
+
+console.log(afterTaxPrice); // 110
+
+
+// 위의 예제를 상수를 이용해서 가독성을 높인 경우
+// 일반적으로 상수의 이름은 대문자로 선언해 상수임을 명확히 나타낸다. 여러 단어로 이뤄진 경우에는 언더스 코어(_)로 구분해서 스네이크 케이스로 표현하는 것이 일반적이다.
+const TAX_RATE = 0.1;
+
+let preTaxPrice = 100;
+
+let afterTaxPrice = preTaxPrice + (preTaxPrice * TAX_RATE);
+console.log(afterTaxPrice);   // 110
+
+
+
+// <<const 키워드와 객체>> 15.3.4
+// const 키워드로 선언된 변수에 원시 값을 할당한 경우 값을 변경할 수 없다. 하지만 const 키워드로 선언된 변수에 객체를 할당한 경우 값을 변경할 수 있다.
+const person = {
+    name: 'Lee'
+};
+// 객체는 변경 가능한 값이다. 따라서 재할당 없이 변경이 가능하다.
+person.name = 'Kim';
+console.log(person.name);
+
+
+
+// <<<내부 슬릇과 내부 메서드>>> 16.1
+// <<프로퍼티 어트리뷰트와 프로퍼티 디스크립터 객체>>
+// 자바스크립트 엔진은 프로퍼티를 생성할 때 프로퍼티의 상태를 나타내는 프로퍼티 어트리뷰트를 기본값으로 자동 정의한다. 프로퍼티의 상태란 프로퍼티의 값, 값의 갱신 가능 여부, 열거 가능 여부, 재정의 가능 여부를 말한다.
+// 프로퍼티 어트리뷰트에 직접 접근할 수 없지만 Object.getOwnPropertyDexcriptor 메서드를 사용하여 간접적으로 확인할 수는 있다.
+// <<데이터 프로퍼티>> 16.3.1
+  // 데이터 프로퍼티는 다음과 같은 프로퍼티 어트리뷰트를 갖는다. 이 프로퍼티 어트리뷰트는 자바스크립트 엔진이 프로퍼티를 생성할 때 기본값으로 자동 정의된다.
+const person = {
+    name: 'Lee'
+};
+
+// 프로퍼티 어트리뷰트 정보를 제공하는 프로퍼티 디스크립터 객체를 반환한다.
+console.log(Object.getOwnPropertyDescriptor(person, 'name')); // { value: 'Lee', writable: true, enumerable: true, configurable: true }
+
+
+
+// ES8에서 도입괸 Object.getOwnPropertyDescriptors 메서드는 모든 프로퍼티의 프로퍼티 어트리뷰트 정보를 제공하는 프로퍼티 디스크립터 객체들을 반환한다.
+const person = {
+    name: 'Lee'
+};
+// 프로퍼티 동적 생성
+person.age = 20;
+// 모든 프로퍼티의 프로퍼티 어트리뷰트 정보를 제공하는 프로퍼티 디스크립터 객체들을 반환한다.
+console.log(Object.getOwnPropertyDescriptors(person)); 
+ /*{
+    name: {value: 'Lee', writable: true, enumerable: true, configurable: true},
+    age: { value: 20, writable: true, enumerable: true, configurable: true }
+  }*/
+
+
+
+  // <<접근자 프로퍼티>> 16.3.2
+  // 접근자 프로퍼티는 자체적으로는 값을 갖지 않고 다른 데이터 프로퍼티의 값을 읽거나 저장할 때 사용하는 접근 함수로 구성된 프로퍼티다.
 
 
 
