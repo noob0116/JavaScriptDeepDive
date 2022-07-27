@@ -1662,5 +1662,101 @@ function Circle(radius) {
 const circle1 = new Circle(5);  // 반지름이 5인 Circle 객체를 생성
 const circle2 = new Circle(10); // 반지름이 10인 Circle 객체를 생성
 
-console.log(circle1.getDiamneter());
-console.log(circle2.getDiamneter());
+console.log(circle1.getDiamneter()); // 10
+console.log(circle2.getDiamneter()); // 20
+
+
+// 함수는 다양한 방식으로 호출될 수 있다.
+function foo() {
+    console.log(this);
+}
+
+// 일반적인 함수로서 호출
+// 전역 객체는 브라우저 환경에서는 window, Node.js 환경에서는 global을 가리킨다.
+foo(); // 브라우저 환경에서는 window
+
+const obj = { foo }; // ES6 프로퍼티 축약 표현
+
+// 메서드로서 호출
+obj.foo(); // obj
+
+// 생성자 함수로서 호출
+const inst = new foo(); // inst
+
+
+
+
+// 생성자 함수는 이름 그대로 객체(인스턴스)를 생성하는 함수다.
+// 일반 함수와 동일한 방법으로 생성자 함수를 정의하고 new 연산자와 함께 호출하면 해당 함수는 생성자 함수로 동작한다.
+// 만약 new 연산자와 함께 생성자 함수를 호출하지 않으면 생성자 함수가 아니라 일반 함수로 동작한다.
+
+// new 연산자와 함께 호출하지 않으면 생성자 함수로 동작하지 않는다.
+// 즉, 일반 함수로서 호출된다.
+const circle3 = Circle(15);
+
+// 일반 함수로서 호출된 Circle은 반환문이 없으므로 암묵적으로 undefined를 반환한다.
+console.log(circle3); // undefined
+
+// 일반 함수로서 호출된 Circle 내의 this는 전역 객체를 가리킨다.
+console.log(radius); // 15
+
+
+
+// <<생성자 함수의 인스턴스 생성 과정>> 17.2.3
+// 생성자 함수의 역할은 프로퍼티 구조가 동일한 인스턴스를 생성하기 위한 템플릿(클래스)으로서 동작하여 인스턴스를 생성하는 것과 생성된 인스턴스를 초기화(인스턴스 프로퍼티 추가 및 초기값 할당)하는 것이다. 생성자 함수가 인스턴스를 생성하는 것은 필수이고, 생성된 인스턴스를 초기화하는 것은 옵션이다.
+
+// 생성자 함수
+function Circle(radius) {
+    // 인스턴스 초기화
+    this.radius = radius;
+    this.getDiameter = function() {
+        return 2 * this.radius;
+    };
+}
+
+// 인스턴스 생성
+const circle1 = new Circle(5); // 반지름이 5인 Circle 객체를 생성
+
+
+
+// <<1. 인스턴스 생성과 this 바인딩>>
+function Circle(radius) {
+    // 1. 암묵적으로 인스턴스가 생성되고 this에 바인딩된다.
+    console.log(this); // Circle {}
+
+    this.radius = radius;
+    this.getDiameter = function() {
+        return 2 * this.radius;
+    };
+}
+
+// <<2. 인스턴스 초기화>>
+function Circle(radius) {
+    // 1. 암묵적으로 인스턴스가 생성되고 this에 바인딩된다.
+    console.log(this); // Circle {}
+
+    // 2. this에 바인딩되어 있는 인스턴스를 초기화한다.
+    this.radius = radius;
+    this.getDiameter = function() {
+        return 2 * this.radius;
+    };
+}
+
+// <<3. 인스턴스 반환>>
+// 생성자 함수 내부의 모든 처리가 끝나면 완성된 인스턴스가 바인딩된 this가 암묵적으로 반환된다.
+function Circle(radius) {
+    // 1. 암묵적으로 인스턴스가 생성되고 this에 바인딩된다.
+    console.log(this); // Circle {}
+
+    // 2. this에 바인딩되어 있는 인스턴스를 초기화한다.
+    this.radius = radius;
+    this.getDiameter = function() {
+        return 2 * this.radius;
+    };
+
+    // 3. 완성된 인스턴스가 바인딩된 this가 암묵적으로 반환된다.
+}
+
+// 인스턴스 생성. Circle 생성자 함수는 암묵적으로 this를 반환한다.
+const circle = new Circle(1);
+console.log(circle); // Circle { radius: 1, getDiameter: [Function (anonymous)] }
