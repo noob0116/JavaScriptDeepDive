@@ -1,21 +1,30 @@
-function Circle(radius) {
-    this.radius = radius;
-    this.getArea = function() {
-        return Math.PI * this.radius ** 2;
-    };
+function Person(name) {
+    this.name = name;
 }
 
-// 반지름이 1인 인스턴스 생성
-const circle1 = new Circle(1);
-// 반지름이 2인 인스턴스 생성
-const circle2 = new Circle(2);
+const me = new Person('Lee');
 
-// Circle 생성자 함수는 인스턴스를 생성할 때마다 동일한 동작을 하는 getArea 메서드를 중복 생성하고 모든 인스턴스가 중복 소유한다.
-// getArea 메서드는 하나만 생성하여 모든 인스턴스가 공유해서 사용하는 것이 바람직하다.
-console.log(circle1.getArea === circle2.getArea);    // false
+// 프로토타입으로 교체할 객체
+const parent = {
+    sayHello() {
+        console.log(`Hi! My name is ${this.name}`);
+    }
+};
 
-console.log(circle1.getArea());
-console.log(circle2.getArea());
+// 1.me 객체의 프로토타입을 parent 객체로 교체한다.
+Object.setPrototypeOf(me, parent);
+// 위 코드는 아래의 코드와 동일하게 동작한다.
+// me.__proto__ = parent;
+
+me.sayHello();   // Hi! My name is Lee
+
+// ⬆️ 19.9.1절 "생성자 함수에 의한 프로토타입의 교체"와 마찬가지로 프로토타입으로 교체한 객체에는 constructor 프로퍼티가 없으므로 constructor 프로퍼티와 생성자 함수
+// 간의 연결이 파괴된다. 따라서 프로토타입의 constructor 프로퍼티로 me 객체의 생성자 함수를 검새하면 Person이 아닌 Object가 나온다.
+
+// 프로토타입을 교체함녀 constructor 프로퍼티와 생성자 함수 간의 연결이 파괴된다.
+console.log(me.constructor === Person);
+console.log(me.constructor === Object);
+
 
 
 
