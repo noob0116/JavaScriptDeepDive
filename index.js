@@ -1864,7 +1864,7 @@ const obj = {
 
 new obj.x(); // TypeError: obj.x is not a constructor
 
-// 함수를 프로퍼티 갑승로 사용하면 일반적으로 메서드로 통칭한다. 하지만 ECMAScript 사양에서 메서드란 ES6의 메서드 축약 표현만을 의미한다. 다시 말해 함수가 어디에 할당되어 있는지에 따라 메서드인지를 판단하는 것이 아니라 함수 정의 방식에 따라 constructor와 non-constructor를 구분한다. 따라서 위 예제와 같이 일반 함수, 즉 함수 선언문과 함수 표현식으로 정의된 함수만이 constructor이고 ES6의 화살표 함수와 메서드 축약 표현으로 정의된 함수는 non-constructor다.
+// 함수를 프로퍼티 값으로 사용하면 일반적으로 메서드로 통칭한다. 하지만 ECMAScript 사양에서 메서드란 ES6의 메서드 축약 표현만을 의미한다. 다시 말해 함수가 어디에 할당되어 있는지에 따라 메서드인지를 판단하는 것이 아니라 함수 정의 방식에 따라 constructor와 non-constructor를 구분한다. 따라서 위 예제와 같이 일반 함수, 즉 함수 선언문과 함수 표현식으로 정의된 함수만이 constructor이고 ES6의 화살표 함수와 메서드 축약 표현으로 정의된 함수는 non-constructor다.
 // 함수를 일반 함수로서 호출하면 함수 객체의 내부 메서드 [[Call]]이 호출되고 new 연산자와 함께 생성자 함수로서 호출하면 내부 메서드 [[Construct]]가 호출된다. non-constructor인 함수 객체는 내부 메서드 [[Construct]]를 갖지 않는다. 따라서 non-constructor인 함수 객체를 생성자 함수로서 호출하면 에러가 발생한다.
 function foo() {}
 
@@ -2728,9 +2728,301 @@ const parent = {
 Person.prototype = parent;
 
 // me 객체의 프로토타입을 parent 객체로 교체한다.
+Object.setPrototypeOf(me, parent);
+// 위 코드는 아래의 코드와 동일하게 동작한다.
+// me.__proto__ = parent;
+
+me.sayHello();  // Hi! My name is Lee
+
+// constructor 프로퍼티가 생성자 함수를 가리킨다.
+console.log(me.constructor === Person);     // true
+console.log(me.constructor === Object);     // false
+
+// 생성자 함수의 prototype 프로퍼티가 교체된 프로토타입을 가리킨다.
+console.log(Person.prototype === Object.getPrototypeOf(me));     // true
+// ⬆ 이처럼 프로토타입 교체를 통해 객체 간의 상속 관계를 동적으로 변경하는 것은 꽤나 번거롭다. 따라서 프로토타입은 직접 교체하지 않는 것이 좋다. 상속 관계를 인위적으로 설정하려면 19.11 절 "직접 상속"에서 살펴볼 직접 상속이 더 편리하고 안전하다.
+
+
+
+// <<< instanceof 연산자 >>> 19.10
+// instanceof 연산자는 이항 연산자로서 좌변에 객체를 가리키는 식별자, 우변에 생성자 함수를 가리키는 식별자를 피연산자로 받는다. 만약 우변의 피연산자가 함수가 아닌 경우 TypeError가 발생한다.
+// 우변의 생성자 함수의 prototype에 바인딩된 객체가 좌변의 객체의 프로토타입 체인 상에 존재하면 true로 평가되고, 그렇지 않은 경우에는 false로 평가된다.
+
+// 생성자 함수
+function Person(name) {
+    this.name = name;
+}
+
+const me = new Person('Lee');
+
+// Person.prototype이 me 객체의 프로토타입 체인 상에 존재하므로 true로 평가된다.
+console.log(me instanceof Person);   // true
+
+// Object.prototype이 me 객체의 프로토타입 체인 상에 존재하므로 true로 평가된다.
+console.log(me instanceof Object);   // true
 
 
 
 
+// 생성자 함수
+function Person(name) {
+    this.name = name;
+}
 
+const me = new Person('Lee');
+
+// 프로토타입으로 교체할 객체
+const parent = {};
+
+// 프로토타입으로 교체
+Object.setPrototypeOf(me, parent);
+
+// Person 생성자 함수와 parent 객체는 연결되어 있지 않다.
+console.log(Person.prototype === parent);   // false
+console.log(Person.prototype === Person);   // false
+
+// Person.prototype이 me 객체의 프로토타입 체인 상에 존재하지 않기 때문에 false로 평가된다.
+console.log(me instanceof Person);   // false
+
+// Object.prototype이 me 객체의 프로토타입 체인 상에 존재하므로 true로 평가된다.
+console.log(me instanceof Object);   // true
+
+
+
+
+// 생성자 함수
+function Person(name) {
+    this.name = name;
+}
+
+const me = new Person('Lee');
+
+// 프로토타입으로 교체할 객체
+const parent = {};
+
+// 프로토타입의 교체
+Object.setPrototypeOf(me, parent);
+
+// Person 생성자 함수와 parent 객체는 연결되어 있지 않다.
+console.log(Person.prototype === Object.prototype);  // false
+console.log(Person.prototype === Person);  // false
+
+// Person.prototype이 me 객체의 프로토타입 체인 상에 존재하지 않기 때문에 false로 평가된다.
+console.log(me instanceof Person);  // false
+
+// Object.prototype이 me 객체의 프로토타입 체인 상에 존재하므로 true로 평가된다.
+console.log(me instanceof Object);  // true
+
+// ⬆️ me 객체는 비록 프로토타입이 교체되어 프로토타입과 생성자 함수 간의 연결이 파괴되었지만 Person 생성자 함수에 의해 생성된 인스터인스임에는 틀림이 없다. 그러나 me instanceof Person은 false로 평가된다.
+// 이는 Person.prototype이 me 객체의 프로토타입 체인 상에 존재하지 않기 때문이다. ⬇️ 따라서 프로토타입으로 교체한 parent객체를 Person 생성자 함수의 prototype 프로퍼티에 바인딩하면 me instanceof Person은 true 로 평가될 것이다.
+
+// 생성자 함수
+function Person(name) {
+    this.name = name;
+}
+
+const me = new Person('Lee');
+
+// 프로토타입으로 교체할 객체
+const parent = {};
+
+// 프로토타입의 교체
+Object.setPrototypeOf(me, parent);
+
+// Person 생성자 함수와 parent 객체는 연결되어 있지 않다.
+console.log(Person.prototype === parent);  // false
+console.log(Person.prototype === Person);  // false
+
+
+// parent 객체를 Person 생성자 함수의 prototype 프로퍼티에 바인딩한다.
+Person.prototype = parent;
+
+// Person.prototype이 me 객체의 프로토타입 체인 상에 존재하므로 true로 평가된다.
+console.log(me instanceof Person);    // true
+
+// Object.prototype이 me 객체의 프로토타입 체인 상에 존재하므로 true로 평가된다.
+console.log(me instanceof Object);    // true
+
+// ⬆️ 이처럼 instanceof 연산자는 프로토타입의 constructor 프로퍼티가 가리키는 생성자 함수를 찾는 것이 아니라 생성자 함수의 prototype에 바인딩된 객체가 프로토타입 체인 상에 존재하는지 확인한다.
+// ⬇️ instanceof 연산자를 함수로 표현하면 다음과 같다.
+function isInstanceof(instance, constructor) {
+    // 프로토타입 취득
+    const prototype = Object.getPrototypeOf(instance);
+
+    // 재귀 탈출 조건
+    // prototype이 null이면 프로토타입 체인의 종점에 다다른 것이다.
+    if (prototype === null) return false;
+
+    // 프로토타입 생성자 함수의 prototype 프로퍼티에 바인딩된 객체라면 true를 반환한다.
+    // 그렇지 않다면 재귀 호출로 프로토타입 체인 상의 상위 프로토타입으로 이동하여 확인한다.
+    return prototype === constructor.prototype || isInstanceof(prototype, constructor);
+}
+
+console.log(isInstanceof(me, Person));   // true
+console.log(isInstanceof(me, Object));   // true
+console.log(isInstanceof(me, Array));    // false
+
+// ⬆️ 따라서 생성자 함수에 의해 프로토타입이 교체되어 constructor 프로퍼티와 생성자 함수 간의 연결이 파괴 되어도 생성자 함수의 prototype 프로퍼티와 프로토타입 간의 연결은 파괴되지 않으므로 instanceof는 아무런 영향을 받지 않는다.
+
+
+
+const Person = (function() {
+    function Person(name) {
+        this.name = name;
+    }
+
+    // 생성자 함수의 prototype 프로퍼티를 통해 프로토타입을 교체
+    Person.prototype = {
+        sayHello() {
+            console.log(`Hi! My name is ${this.name}`);
+        }
+    };
+    
+    return Person;
+}());
+
+const me = new Person('Lee');
+
+// constructor 프로퍼티와 생성자 함수 간의 연결이 파괴되어도 instanceof는 아무런 영향을 받지 않는다.
+console.log(me instanceof Person);   // true
+// Object.prototype이 me 객체의 프로토타입 체인 상에 존재하므로 true로 평가된다.
+console.log(me instanceof Object);   // true
+
+
+
+// <<< 직접 상속 >>> 19.11
+// << Object.create에 의한 직접 상속 >> 19.11.1
+// Object.create 메서드는 명시적으로 프로토타입을 지정하여 새로운 객체를 생성한다. Object.create 메서드도 다른 객체 생성 방식과 마찬가지로 추상 연산 OrdinaryObjectCreate를 호출한다.
+// Object.create 메서드의 첫 번째 매개변수에는 생성할 객체의 프로토타입으로 지정할 객체를 전달한다. 두번째 매개변수에는 생성할 객체의 프로퍼티 키와 프로퍼티 디스크립터 객체로 이뤄진 객체를 전달한다. 이 객체의 형식은 Object.defineProperties 메서드의 두 번째 인수와 동일하다. 두 번째 인수는 옵션이므로 생략 가능하다.
+
+// 프로토타입이 null인 객체를 생성한다. 생성된 객체는 프로토타입 체인의 종점에 위치한다.
+// obj -> null
+let obj = Object.create(null);
+console.log(Object.getPrototypeOf(obj) === null);    // true
+// Object.prototype을 상속받지 못한다.
+console.log(obj.toString());  // TypeError: obj.toString is not a function
+
+// obj -> Object.prototype -> null
+// obj = {}; 와 동일하다.
+obj = Object.create(Object.prototype);
+console.log(Object.getPrototypeOf(obj) === Object.prototype);    // true
+
+
+// obj -> Object.prototype -> null
+// obj = { x:1 }; 와 동일하다
+obj = Object.create(Object.prototype, {
+    x: {value: 1, writable: true, enumerable: true, configurable: true}
+});
+// 위 코드는 아래와 동일하다.
+// obj = Object.create(Object.prototype);
+// obj.x = 1;
+console.log(obj.x);   // 1
+console.log(Object.getPrototypeOf(obj) === Object.prototype);   // true
+
+
+const myProto = { x: 10 };
+// 임의의 객체를 직접 상속받는다.
+// obj -> myProto -> Object.prototype -> null
+obj = Object.create(myProto);
+console.log(obj.x);   // 10
+console.log(Object.getPrototypeOf(obj) === myProto);  // true
+
+
+// 생성자 함수
+function Person(name) {
+    this.name = name;
+}
+
+// obj -> Person.prototype -> Object.prototype -> null
+// obj = new Person('Lee')와 동일하다.
+obj = Object.create(Person.prototype);
+obj.name = 'Lee';
+console.log(Object.getPrototypeOf(obj) === Person.prototype);  // true
+// ⬆️ 이처럼 Object.create 메서드는 첫 번째 매개변수에 전달한 객체의 프로토타입 체인에 속하는 객체를 생성한다. 즉, 객체를 생성하면서 직접적으로 상속을 구현하는 것이다.
+// 이 메서드의 장점은 다음과 같다.
+/*
+- new 연산자 없이도 객체를 생성할 수 있다.
+- 프로토타입을 지정하면서 객체를 생성할 수 있다.
+- 객체 리터럴에 의해 생성된 객체도 상속받을 수 있다.
+*/
+
+// object.prototype의 빌트인 메서드인 Object.prototype.hasOwnProperty, Object.prototype.isPrototypeOf, Object.prototype.propertyIsEnumerable 등은 모든 객체의 프로토타입 체인의 종점, 즉 Object.prototype의 메서드이므로 모든 객체가 상속받아 호출할 수 있다.
+const obj = { a: 1 };
+
+console.log(obj.hasOwnProperty('a'));         // true
+console.log(obj.propertyIsEnumerable('a'));   // true
+
+// 그런데 ESLint에서는 앞의 예제와 같이 Object.prototype의 빌트인 메서드를 객체가 직접 호출하는 것을 권장하지 않는다. 그 이유는 Object.create 메서드를 통해 프로토타입 체인의 종점에 위치하는 객체를 생성할 수 있기 때문이다. 프로토타입 체인의 종점에 위치하는 객체는 Object.prototype의 빌트인 메서드를 사용할 수 없다.
+// 프로토타입이 null인 객체, 즉 프로토타입 체인의 종점에 위치하는 객체를 생성한다.
+const obj = Object.create(null);
+obj.a = 1;
+
+console.log(Object.getPrototypeOf(obj) === null);   // true
+
+// obj는 Object.prototype의 빌트인 메서드를 사용할 수 없다.
+console.log(obj.hasOwnProperty('a'));  // TypeError: obj.hasOwnProperty is not a function
+
+// ⬆️⬇️ 따라서 이 같은 에러를 발생시킬 위험을 없애기 위해 Object.prototype의 빌트인 메서드는 다음과 같이 간접적으로 호출하는 것이 좋다.
+// 프로토타입이 null인 객체를 생성한다.
+const obj = Object.create(null);
+obj.a = 1;
+
+// console.log(obj.hasOwnProperty('a'));
+// TypeError: obj.hasOwnProperty is not a function
+
+// Object.prototype의 빌트인 메서드는 객체로 직접 호출하지 않는다.
+console.log(Object.prototype.hasOwnProperty.call(obj, 'a'));   // true
+// ⬆️ Function.prototype.call 메서드에 대해서는 22.2.4절에서 알아본다.
+
+
+// << 객체 리터럴 내부에서 __proto__ 에 의한 직접 상속 >> 19.11.2
+// Object.create 메서드에 의한 직접 상속은 앞에서 다룬 것과 같이 여러 장점이 있다. 하지만 두 번째 인자로 프로퍼티를 정의하는 것은 번거롭다. 일단 객체를 생성한 이후 프로퍼티를 추가하는 방법도 있으나 이 또한 깔끔한 방법은 아니다. 
+// ES6에서는 객체 리터럴 내부에서 __proto__ 접근자 프로퍼티를 사용하여 직접 상속을 구현할 수 있다.
+const myProto = { x: 10 };
+
+// 객체 리터럴에 의해 객체를 생성하면서 프로토타입을 지정하여 직접 상속받을 수 있다.
+const obj = {
+    y: 20,
+    // 객체를 직접 상속받는다.
+    // obj -> myProto -> Object.prototype -> null
+    __proto__: myProto
+};
+/* 위 코드는 아래와 동일하다.
+const obj = object.create(myProto, {
+    y: { value: 20, writable: true, enmerable: true, configurable: true }
+});
+*/
+
+console.log(obj.x, obj.y);  // 10 20
+console.log(Object.getPrototypeOf(obj) === myProto); // true
+
+
+
+//<<< 정적 프로퍼티/메서드 >>> 19.12
+// 생성자 함수
+function Person(name) {
+    this.name = name;
+}
+
+// 프로토타입 메서드
+Person.prototype.sayHello = function() {
+    console.log(`Hi! My name is ${this.name}`);
+};
+
+// 정적 프로퍼티
+Person.staticProp = 'static prop';
+
+// 정적 메서드
+Person.staticMethod = function () {
+    console.log('staticMethod');
+};
+
+const me = new Person('Lee');
+
+// 생성자 함수에 추가한 정적 프로퍼티/메서드는 생성자 함수로 참조/호출한다.
+Person.staticMethod();
+
+// 정적 프로퍼티/메서드는 생성자 함수가 생성한 인스턴스로 참조/호출할 수 없다.
+// 인스턴스로 참조/호출할 수 있는 프로퍼티/메서드는 프로토타입 체인 상에 존재해야 한다.
+me.staticMethod();
 
