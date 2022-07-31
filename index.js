@@ -2999,6 +2999,8 @@ console.log(Object.getPrototypeOf(obj) === myProto); // true
 
 
 //<<< 정적 프로퍼티/메서드 >>> 19.12
+// 정적 프로퍼티/메서드는 생성자 함수로 인스턴스를 생성하지 않아도 참조/호출할 수 있는 프로퍼티/메서드를 말한다.
+
 // 생성자 함수
 function Person(name) {
     this.name = name;
@@ -3024,5 +3026,209 @@ Person.staticMethod();
 
 // 정적 프로퍼티/메서드는 생성자 함수가 생성한 인스턴스로 참조/호출할 수 없다.
 // 인스턴스로 참조/호출할 수 있는 프로퍼티/메서드는 프로토타입 체인 상에 존재해야 한다.
-me.staticMethod();
+me.staticMethod();  // TypeError: me.staticMethod is not a function
+// ⬆️ Person 생성자 함수는 객체이므로 자신의 프로퍼티/메서드를 소유할 수 있다. Person 생성자 함수 객체가 소유한 프로퍼티/메서드를 정적 프로퍼티/메서드라고 한다. 정적 프로퍼티/메서드는 생성자 함수가 생성한 인스턴스로 참조/호출할 수 없다.
+// 생성자 함수가 생성한 인스턴스는 자신의 프로토타입 체인에 속한 객체의 프로퍼티/메서드에 접근할 수 있다. 하지만 정적 프로퍼티/메서드는 인스턴스의 프로토타입 체인에 속한 객체의 프로퍼티/메서드가 아니므로 인스턴스로 접근할 수 없다.
+// 앞에서 살펴본 Object.create 메서드는 Object 생성자 함수의 정적 메서드고 Object.prototype.hasOwnProperty 메서드는 Object.prototype의 메서드다. 따라서 Object.create 메서드는 인스턴스, 즉 Object 생성자 함수가 생성한 객체로 호출할 수 없다. 하지만 Objcet.prototype.hasOwnProperty 메서드는 모든 객체의 프로토타입 체인의 종점, 즉 Object.prototype의 메서드이므로 모든 객체가 호출할 수 있다.
+
+// Object.create는 정적 메서드다.
+const obj = Object.create({ name: 'Lee' });
+
+// Object.protoype.hasOwnProperty는 프로토타입 메서드다.
+obj.hasOwnProperty('name'); 
+
+
+// 만약 인스턴스/프로토타입 메서드 내에서 this를 사용하지 않는다면 그 메서드는 정적 메서드로 변경할 수 있다. 인스턴스가 호출한 인스턴스/프로토타입 메서드 내에서 
+// this는 인스턴스를 가리킨다. 메서드 내에서 인스턴스를 참조할 필요가 없다면 정적 메서드로 변경하여도 동작한다. 프로토타입 메서드를 호출하려면 인스턴스를 생성해야 
+// 하지만 정적 메서드는 인스턴스를 생성하지 않아도 호출할 수 있다.
+function Foo() {}
+
+// 프로토타입 메서드
+// this를 참조하지 않는 프로토타입 메서드는 정적 메서드로 변경하여도 동일한 효과를 얻을 수 있다.
+Foo.prototype.x = function() {
+    console.log('x');
+};
+
+const foo = new Foo();
+// 프로토타입 메서드를 호출하려면 인스턴스를 생성해야 한다.
+foo.x(); // x
+
+// 정적 메서드
+Foo.x = function () {
+    console.log('x');
+};
+
+// 정적 메서드는 인스턴스를 생성하지 않아도 호출할 수 있다.
+Foo.x(); // x
+
+// 참고로 프로토타입 프로퍼티/메서드를 표기할 때 prototype을 #으로 표기(예를 들어, Object.prototype.isPrototypeOf를 Object#isPrototypeOf으로 표기)하는 경우도 있으니 알아두도록 하자.
+
+
+
+// <<< 프로퍼티 존재 확인 >>> 19.13
+
+// << in 연산자 >> 19.13.1
+// in 연산자는 객체 내에 특정 프로퍼티가 존재하는지 여부를 확인한다. in 연산자의 사용법은 다음과 같다.
+/*
+* key: 프로퍼티 키를 나타내는 문자열
+* object: 객체로 평가되는 표현식
+*/
+// key in object
+const person = {
+    name: 'Lee',
+    address: 'Seoul'
+};
+
+// person 객체에 name 프로퍼티가 존재한다.
+console.log('name' in person);    // true
+
+// person 객체에 address 프로퍼티가 존재한다.
+console.log('address' in person); // true
+
+// person 객체에 age 프로퍼티가 존재하지 않는다.
+console.log('age' in person);     // true
+
+// ⬇️ in 연산자는 확인 대상 객체(위 예제의 경우 person객체)의 프로퍼티뿐만 아니라 확인 대상 객체가 상속받은 모든 프로토타입의 프로퍼티를 확인하므로 주의가 필요하다.
+// person 객체에는 toString이라는 프로퍼티가 없지만 다음 코드의 실행 결과는 true다.
+
+console.log('toString' in person); // true
+
+// ⬆️ 이는 in 연산자가 person 객체가 속한 프로토타입 체인 상에 존재하는 모든 프로토타입에서 toString 프로퍼티를 검색했기 때문이다. toString은 Object.prototype의 메서드다.
+
+// in 연산자 대신 ES6에서 도입된 Reflect.has 메서드를 사용할 수도 있다. Reflect.has 메서드는 in 연산자와 동일하게 동작한다.
+const person = { name: 'Lee' };
+
+console.log(Reflect.has(person, 'name'));       // true
+console.log(Reflect.has(person, 'toString'));   // true
+
+
+
+// << Object.prototype.hasOwnProperty 메서드
+// Object.prototype.hasOwnProperty 메서드를 사용해도 객체에 특정 프로퍼티가 존재하는지 확인할 수 있다.
+console.log(person.hasOwnProperty('name'));   // true
+console.log(person.hasOwnProperty('age'));    // false
+
+// ⬇️ Object.prototype.hasOwnProperty 메서드는 이름에서 알 수 있듯이 인수로 전달받은 프로퍼티 키가 객체 고유의 프로퍼티 키인 경우에만 true를 반환하고
+// 상속받는 프로토타입의 프로퍼티 키인 경우 false를 반환한다.
+
+console.log(person.hasOwnProperty('toString'));  //false
+
+
+
+// <<< 프로퍼티 열거 >>> 19.14
+
+// << for...in 문 >> 19.14.1
+// 객체의 모든 프로퍼티를 순회하며 열거 하려면 for...in 문을 사용한다.
+// for (변수선언문 in 객체) {...}
+
+const person = {
+    name: 'Lee',
+    address: 'Seoul'
+};
+
+// for...in 문의 변수 prop에 person 객체의 프로퍼티 키가 할당된다.
+for (const key in person) {
+    console.log(key+': '+person[key]);
+}
+//name: Lee
+//address: Seoul
+
+// ⬆️ for...in 문은 객체의 프로퍼티 개수만큼 순회하며 for...in 문의 변수 선언문에서 선언한 변수에 프로퍼티 키를 할당한다. 위 예제의 경우 person 객체에는 2개의 프로퍼티가 있으므로
+// 객체를 2번 순회하면서 프로퍼티 키를 key 변수에 할당한 후 코드 블록을 실행한다. 첫 번째 순회에서는 프로퍼티 키 'name'을 key 변수에 할당한 후 코드 블록을 실행하고 두
+// 번째 순회에서는 프로퍼티 키 'address'를 key 변수에 할당한 후 코드블록을 실행한다.
+
+// for...in 문은 in 연산자처럼 순회 대상 객체의 프로퍼티뿐만 아니라 상속받은 프로토타입의 프로퍼티까지 열거한다. 하지만 위 예제의 경우 toString과 같은 Object.prototype의 프로퍼티가 
+// 열거되지 않는다.
+
+
+const person = {
+    name: 'Lee',
+    address: 'Seoul'
+};
+
+// in 연산자는 객체가 상속받은 모든 프로토타입의 프로퍼티를 확인한다.
+console.log('toString' in person);
+
+// for...in 문도 객체가 상속받은 모든 프로토타입의 프로퍼티를 열거한다.
+// 하지만 toString과 같은 Object.prototype의 프로퍼티가 열거되지 않는다.
+for (const key in person) {
+    console.log(key+': '+person[key]);
+}
+// name: Lee
+// address: Seoul
+
+// ⬆️ 이는 toString 메서드가 열거할 수 없도록 정의되어 있는 프로퍼티이기 때문이다. 다시 말해, Object.prototype.string 프로퍼티의 프로퍼티 어트리뷰트 [[Enumerable]]의 값이 false이기 때문이다.
+// 프로퍼티 어트리뷰트 [[Enumerable]]은 프로퍼티의 열거 가능 여부를 나타내며 불리언 값을 갖는다.
+
+// Object.getOwnPropertyDescriptor 메서드는 프로퍼티 디스크립터 객체를 반환한다.
+// 프로퍼티 디스크립터 객체는 프로퍼티 어트리뷰트 정보를 담고 있는 객체다.
+// console.log(Object.getOwnPropertyDescriptor(Object.prototype, 'toString')); { value: [Function: toString], writable: true, enumerable: false, configurable: true }
+
+// for...in 문은 객체의 프로토타입 체인 상에 존재하는 모든 프로토타입의 프로퍼티 중에서 프로퍼티 어트리뷰트 [[Enumerable]]의 값이 true인 프로퍼티를 순회하며 열거한다.
+
+const person = {
+    name: 'Lee',
+    address: 'Seoul',
+    __proto__: { age: 20 }
+};
+
+for (const key in person) {
+    console.log(key +': '+ person[key]);
+}
+/* name: Lee
+address: Seoul
+age: 20 */
+
+// ⬇️ for...in 문은 프로퍼티 키가 심벌인 프로퍼티는 열거하지 않는다.
+const sym = Symbol();
+const obj = {
+    a: 1,
+    [sym]: 10
+};
+
+for (const key in obj) {
+    console.log(key +': '+ obj[key]);
+}
+// a: 1
+
+
+
+// 상속받은 프로퍼티는 제외하고 객체 자신의 프로퍼티만 열거하려면 Object.prototype.hasOwnProperty 메서드를 사용하여 객체 자신의 프로퍼티인지 확인해야 한다.
+const person = {
+    name: 'Lee',
+    address: 'Seoul',
+    __proto__: { age: 20 }
+};
+
+for (const key in person) {
+    // 객체 자신의 프로퍼티인지 확인한다.
+    if (!person.hasOwnProperty(key))continue;
+    console.log(key +': '+ person[key]);
+}
+
+// name: Lee
+// address: Seoul
+
+// ⬆️ 위 예제의 결과는 person 객체의 프로퍼티가 정의된 순서대로 열거되었다. 하지만 for...in 문은 프로퍼티를 열거할 때 순서를 보장하지 않으므로 주의해야 한다.
+// 하지만 대부분의 모던 브라우저는 순서를 보장하고 숫자(사실은 문자열)인 프로퍼티 키에 대해서는 정렬을 실시한다.
+
+const obj = {
+    2: 2,
+    3: 3,
+    1: 1,
+    b: 'b',
+    a: 'a'
+};
+
+for (const key in obj) {
+    if (!obj.hasOwnProperty(key))continue;
+    console.log(key +': '+ obj[key]);
+}
+/*
+1: 1
+2: 2
+3: 3
+b: b
+a: a
+*/
 

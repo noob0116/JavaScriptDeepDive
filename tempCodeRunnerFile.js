@@ -1,19 +1,12 @@
-// ES6에서는 객체 리터럴 내부에서 __proto__ 접근자 프로퍼티를 사용하여 직접 상속을 구현할 수 있다.
-const myProto = { x: 10 };
-
-// 객체 리터럴에 의해 객체를 생성하면서 프로토타입을 지정하여 직접 상속받을 수 있다.
 const obj = {
-    y: 20,
-    // 객체를 직접 상속받는다.
-    // obj -> myProto -> Object.prototype -> null
-    __proto__: myProto
+    2: 2,
+    3: 3,
+    1: 1,
+    b: 'b',
+    a: 'a'
 };
-/* 위 코드는 아래와 동일하다.
-const obj = object.create(myProto, {
-    y: { value: 20, writable: true, enmerable: true, configurable: true }
-});
-*/
 
-console.log(obj.x, obj.y);
-console.log(Object.getPrototypeOf(obj) === myProto);
-
+for (const key in obj) {
+    if (!obj.hasOwnProperty(key))continue;
+    console.log(key +': '+ obj[key]);
+}
