@@ -3232,3 +3232,52 @@ b: b
 a: a
 */
 
+// ⬆️ 배열에는 for...in 문을 사용하지 말고 일반적인 for 문이나 for...of 문 또는 Array.prototype.forEach 메서드를 사용하기를 권장한다. 사실 배열도 객체이므로
+// 프로퍼티와 상속받은 프로퍼티가 포함될 수 있다.
+
+const arr = [1, 2, 3];
+arr.x = 10;  // 배열도 객체이므로 프로퍼티를 가질 수 있다.
+
+for (const i in arr) {
+    // 프로퍼티 x도 출력된다.
+    console.log(arr[i]);   // 1 2 3 10
+};
+
+// arr.length는 3이다.
+for (let i = 0; i < arr.length; i++) {
+    console.log(arr[i]);  // 1 2 3
+} 
+
+// forEach 메서드는 요소가 아닌 프로퍼티는 제외한다.
+arr.forEach(v => console.log(v));  // 1 2 3
+
+// for...of는 변수 선언문에서 선언한 변수에 키가 아닌 값을 할당한다.
+for (const value of arr) {
+    console.log(value);  // 1 2 3
+};
+
+
+// << Object.keys/values/entries 메서드
+// 지금까지 살펴보았듯이 for...in 문은 객체 자신의 고유 프로퍼티뿐 아니라 상속받은 프로퍼티도 열거한다. 따라서 Object.prototype.hasOwnProperty 메서드를 사용하여
+// 객체 자신의 프로퍼티인지 확인하는 추가 처리가 필요하다. 객체 자신의 고유 프로퍼티만 열거하기 위해서는 for...in 문을 사용하는 것보다 Object.keys/values/entries 
+// 메서드를 사용하는 것을 권장한다. Object.keys 메서드는 객체 자신의 열거 가능한 프로퍼티 키를 배열로 반환한다.
+const person = {
+    name: 'Lee',
+    address: 'Seoul',
+    __proto__: { age: 20 }
+};
+
+console.log(Object.keys(person));  // [ 'name', 'address' ]
+
+
+// ES8에서 도입된 Object.values 메서드는 객체 자신의 열거 가능한 프로퍼티 값을 배열로 반환한다.
+console.log(Object.values(person));  // [ 'Lee', 'Seoul' ]
+
+// ES8에서 도입된 Object.entries 메서드는 객체 자신의 열거 가능한 프로퍼티 키와 값의 쌍의 배열을 배열에 담아 반환한다.
+console.log(Object.entries(person)); // [ [ 'name', 'Lee' ], [ 'address', 'Seoul' ] ]
+
+Object.entries(person).forEach(([key,value]) => console.log(key, value));
+/*
+name Lee
+address Seoul
+*/
