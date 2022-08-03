@@ -3281,3 +3281,305 @@ Object.entries(person).forEach(([key,value]) => console.log(key, value));
 name Lee
 address Seoul
 */
+
+
+
+
+// <<<< strict mode >>>> 20장
+// <<< strinct mode란? >>> 20.1
+function foo() {
+    x = 10;
+}
+foo ();
+
+console.log(x);
+// ↑ foo 함수 내에서 선언하지 않은 x 변수에 값 10을 할당하면 자바스크립트 엔진은 먼저 foo 함수의 스코프에서 x 변수의 선언을 검색한다. foo 함수의 스코프에는 x변수의 선언이 없으므로 검색에 실패하고
+// 엔진은 x변수를 검색하기 위해 foo 함수 컨텍스트의 상위 스코프(위 예제의 경우 전역 스코프)에서 x 변수의 선언을 검색한다.
+// 전역 스코프에도 x 변수의 선언이 존재하지 않기 때문에 ReferenceError를 발생시킬 것 같지만 자바스크립트 엔진은 암묵적으로 전역 객체에 x 프로퍼티를 동적 생성한다. 
+// 이때 전역 객체의 x프로퍼티는 마치 전역 변수처럼 사용할 수 있다. 이러한 현상을 암묵적 전역 이라고 한다. 개발자의 의도와는 상관없이 발생한 암묵적 전역은 오류를 발생시키는 원인이 될 가능성이 크다.
+// 따라서 반드시 var,let,const 키워드를 사용하여 변수를 선언한 다음 사용해야 한다.
+
+// 오류를 줄이기위해 strict mode 와 ESLint 같은 린트 도구를 사용할수 있는데 린트 도구는 strict mode가 제한하는 오류를 물론 코딩 컨벤션을 따로 설정 파일 형태로 정의하고 강제할 수 있기 때문에
+// 더욱 강력한 효과를 얻을 수 있다.
+
+
+
+// <<< strict mode의 적용 >>> 20.2
+// strict mode 를 적용하려면 전역의 선두 또는 함수 몸체의 선두에 'use strict';를 추가한다. 전역의 선두에 추가하면 스크립트 전체에 strict mode가 적용된다.
+'use strict';
+
+function foo() {
+    x = 10;  // ReferenceError: x is not defined
+}
+foo(); 
+
+// ↓ 함수 몸체의 선두에 추가하면 해당 함수와 중첩 함수에 strict mode가 적용된다.
+function foo() {
+    'use strict';
+
+    x = 10;   // ReferenceError: x is not defined
+
+}
+foo();   
+
+
+// ↓ 코드의 선두에 'use strict'; 를 위치시키지 않으면 strict mode가 제대로 동작하지 않는다.
+function foo() {
+    x = 10;
+    'use strict'; // 에러를 발생시키지 않는다.
+}
+foo();
+
+
+
+// <<< 전역에 strict mode를 적용하는 것은 피하자 >>> 20.3
+// 전역에 적용한 strict mode는 스크립트 단위로 적용된다.
+<!DOCTYPE html>
+<html>
+<body>
+    <script>
+        'use strict';
+    </script>
+    <script>
+        x = 1;    // 에러가 발생하지 않는다.
+        console.log(x);
+    </script>
+    <script>
+        'use strict';
+
+        y = 1;   // ReferenceError: y is noe defined
+        console.log(y);
+    </script>
+</body>
+</html>
+
+// 위 예제와 같이 스크립트 단위로 적용된 strict mode는 다른 스크립트에 영향을 주지 않고 해당 스크립트에 한정되어 적용된다. 하지만 strict mode 스크립트와 non-strict mode스크립트를 혼용하는 것은
+// 오류를 발생시킬 수 있다. 특히 외부 서드파티 라이브러리를 사용하는 경우 라이브러리가 non-strict mode인 경우도 있기 때문에 전역에 strict mode를 적용하는 것은 바람직하지 않다. 이러한 경우 즉시
+// 실행 함수로 스크립트 전체를 감싸서 스코프를 구분하고 즉시 실행 함수의 선두에 strict mode를 적용한다.
+
+// 즉시 실행 함수의 선두에 strict mode 적용
+(function () {
+    'use strict';
+
+    // Do something...
+}());
+
+
+
+// <<< 함수 단위로 strict mode를 적용하는 것도 피하자 >>> 20.4
+// 함수 단위로도 strict mode를 적용할 수 있다. 그러나 어떤 함수는 strict mode를 적용하고 어떤 함수는 strict mode를 적용하지 않는 것은 바람직하지 않으며 모든 함수에 일일이 strict mode를
+// 적용하는 것은 번거로운 일이다. 그리고 strict mode가 적용된 함수가 참조할 함수 외부의 컨텍스트에 strict mode를 적용하지 않는다면 이 또한 문제가 발생할 수 있다.
+(function () {
+    // non-strict mode
+    var let = 10; // 에러가 발생하지 않는다.
+
+    function foo() {
+        'use strict';
+
+        let = 20;   // SyntaxError: Unexpected strict mode reserved word
+    }
+    foo();
+}());
+// ↑ 따라서 strict mode는 즉시 실행 함수로 감싼 스크립트 단위로 적용하는 것이 바람직하다.
+
+
+
+// <<< strict moder가 발생시키는 에러 >>> 20.5
+// << 암묵적 전역 >> 20.5.1
+// 선언하지 않은 변수를 참조하면 ReferenceError가 발생한다.
+(function () {
+    'use strict';
+
+    x = 1;      
+    console.log(x);  // ReferenceError: x is not defined
+}());
+
+
+
+// << 변수,함수,매개변수의 삭제 >> 20.5.2
+// delete 연산자로 변수, 함수, 매개변수를 삭제하면 SyntaxError가 발생한다.
+(function () {
+    'use strict';
+
+    var x = 1;
+    delete x;    // SyntaxError: Delete of an unqualified identifier in strict mode.
+
+    function foo(a) {
+        delete a;   // SyntaxError: Delete of an unqualified identifier in strict mode.
+    }
+    delete foo;  // SyntaxError: Delete of an unqualified identifier in strict mode.
+}());
+
+
+
+// << 매개변수 이름의 중복 >> 20.5.3
+// 중복된 매개변수 이름을 사용하면 SyntaxError가 발생한다.
+(function () {
+    'use strict';
+
+    // SyntaxError: Duplicate parameter name not allowed in this context
+    function foo(x, x) {
+        return x + x;
+    }
+    console.log(foo(1, 2));
+}());
+
+
+
+
+// << with문의 사용 >> 20.5.4
+// with 문을 사용하면 SyntaxError가 발생한다. with 문은 전달된 객체를 스코프 체인에 추가한다. with문은 동일한 객체의 프로퍼티를 반복해서 사용할 때 객체 이름을 생략할 수 있어서 코드가 간단해지는
+// 효과가 있지만 가동성이 나빠지는 문제가 있다. 따라서 with문은 사용하지 않는 것이 좋다.
+(function () {
+    'use strict';
+
+    // SyntaxError: Strict mode code may not include a with statement
+    with({ x: 1 }) {
+        console.log(x);
+    }
+}());
+
+
+
+// <<< strict mode 적용에 의한 변화 >>> 20.6
+// << 일반 함수의 this >> 20.6.1
+// strict mode에서 함수를 일반 함수로서 호출하면 this에 undefined가 바인딩된다. 생성자 함수가 아닌 일반 함수 내부에서는 this를 사용할 필요가 없기 때문이다. 이때 에러는 발생하지 않는다.
+(function () {
+    'use strict';
+
+    function foo() {
+        console.log(this);  // undefined
+    }
+    foo();
+
+    function Foo() {
+        console.log(this);  // Foo
+    }
+    new Foo();
+}());
+
+
+
+// << arguments 객체 >> 20.6.2
+// strict mode에서는 매개변수에 전달된 인수를 재할당하여 변경해도 arguments 객체에 반영되지 않는다.
+(function (a) {
+    'use strict';
+    // 매개변수에 전달된 인수를 재할당하여 변경
+    a = 2;
+
+    // 변경된 인수가 arguments 객체에 반영되지 않는다.
+    console.log(arguments);   // [Arguments] { '0': 1 }
+}(1));
+
+
+
+
+// <<<< 빌트인 객체 >>>> 21장
+// <<< 자바스크립트 객체의 분류 >>> 21.1
+
+// << 표준 빌트인 객체 >> 21.2
+// Math, Reflect, JSON을 제외한 표준 빌트인 객체는 모두 인스턴스를 생성할 수 있는 생성자 함수 객체다. 생성자 함수 객체인 표준 빌트인 객체는 프로토타입 메서드와 정적 메서드를 제공하고 생성자
+// 함수 객체가 아닌 표준 빌트인 객체는 정적 메서드만 제공한다. 예를 들어, 표준 빌트인 객체인 String, Number, Boolean, Function, Array, Date는 생성자 함수로 호출하여 인스턴스를 생성할 수 있다.
+
+// String 생성자 함수에 의한 String 객체 생성
+const strObj = new String('Lee');  // String {"Lee"}
+console.log(typeof strObj);        // object
+
+// Number 생성자 함수에 의한 Number 객체 생성
+const numObj = new Number(123);   // Number {123}
+console.log(typeof numObj);       // object
+
+// Boolean 생성자 함수에 의한 Boolean 객체 생성
+const boolObj = new Boolean(true);// Boolean {true}
+console.log(typeof boolObj);      // object
+
+// Function 생성자 함수에 의한 Function 객체(함수) 생성
+const func = new Function('x', 'return x * x');    // f anonymous(x)
+console.log(typeof func);                          // function'
+
+// Array 생성자 함수에 의한 Array 객체(배열) 생성
+const arr = new Array(1, 2, 3);   // (3) [1, 2, 3]
+console.log(typeof arr);          // object
+
+// RegExp 생성자 함수에 의한 RegExp 객체(정규 표현식) 생성
+const regExp = new RegExp(/ab+c/i);   // /ab+c/i
+console.log(typeof regExp);           // object
+
+// Date 생성자 함수에 의한 Date 객체 생성
+const date = new Date();  
+console.log(typeof date);    // object
+
+
+// ↓ 생성자 함수인 표준 빌트인 객체가 생성한 인스턴스의 프로토타입은 표준 빌트인 객체의 prototype 프로퍼티에 바인딩된 객체다. 예를 들어, 표준 빌트인 객체인 String을 생성자 함수로서 호출하여
+// 생성한 String인스턴스의 프로토타입은 String.prototype이다.
+
+// String 생성자 함수에 의한 String 객체 생성
+const strObj = new String('Lee');  // String{"Lee"}
+
+// String 생성자 함수를 통해 생성한 strObj 객체의 프로토타입은 String.prototype이다.
+console.log(Object.getPrototypeOf(strObj) === String.prototype);   // true
+
+
+// ↓ 표준 빌트인 개겣의 prototype 프로퍼티에 바인딩된 객체(예를 들어, String.prototype)는 다양한 기능의 빌트인 프로토타입 메서드를 제공한다. 그리고 표준 빌트인 객체는 인스턴스 없이도 호출 가능한
+// 빌트인 정적 메서드를 제공한다. 
+
+
+
+// Number 생성자 함수에 의한 Number 객체 생성
+const numObj = new Number(1.5);
+
+// toFixed는 Number.prototype의 프로토타입 메서드다.
+// Number.prototype.toFixed는 소수점 자리를 반올림하여 문자열로 반환한다.
+console.log(numObj.toFixed());   // 2
+
+// isInteger는 Number의 정적 메서드다.
+// Number.isInteger는 인수가 정수(integer)인지 검사하여 그 결과를 Boolean으로 반환한다.
+console.log(Number.isInteger(0.5));  // false
+
+
+
+// <<< 원시값과 래퍼 객체 >>> 21.3
+// 문자열이나 숫자, 불리언 등의 원시값이 있는데도 문자열, 숫자, 불리언 객체를 생성하는 String, Number, Boolean 등의 표준 빌트인 생성자 함수가 존재하는 이유는 무엇일까
+// 다음예제를 보면, 원시값은 객체가 아니므로 프로퍼티나 메서드를 가질 수 없는데도 원시값인 문자열이 마치 객체처럼 동작한다.
+const str = 'hello';
+
+// 원시 타입인 문자열이 프로퍼티와 메서드를 갖고 있는 객체처럼 동작한다.
+console.log(str.length);          // 5  
+console.log(str.toUpperCase());   // HELLO
+
+// ↑ 이처럼 문자열, 숫자, 불리언 값에 대해 객체처럼 접근하면 생성되는 임시 객체를 래퍼 객체라 한다. 예를 들어, 문자열에 대해 마침표 표기법으로 접근하면 그 순간 래퍼 객체인 String 생성자 함수의
+// 인스턴스가 생성되고 문자열은 래퍼 객체의 [[StringData]] 내부 슬롯에 할당된다.
+const str = 'hi';
+
+//원시 타입인 문자열이 래퍼 객체인 String 인스턴스로 변환된다.
+console.log(str.length);               // 2
+console.log(str.toUpperCase());        // HI
+
+// 래퍼 객체로 프로퍼티에 접근하거나 메서드를 호출한 후, 다시 원시값으로 되돌린다.
+console.log(typeof str);               // string
+
+// ↑ 이때 문자열 래퍼 객체인 String 생성자 함수의 인스턴스는 String.prototype의 메서드를 상속받아 사용할 수 있다.
+
+
+
+
+// 그 후 래퍼 객체의 처리가 종료되면 래퍼 ---------------객체의 [[StringData]] 내부 슬롯에 할당된 원시값으로 원래의 상태, 즉 식별자가 원시값을 갖도록 되돌리고 래퍼 객체는 가비지 컬렉션의 대상이 된다.
+// 1. 식별자 str은 문자열을 값으로 가지고 있다.
+const str = 'hello';
+
+// 2. 식별자 str은 암묵적으로 생성된 래퍼 객체를 가리킨다.
+// 식별자 str의 값 'hello'는 래퍼 객체의 [[StringData]] 내부 슬롯에 할당된다.
+// 래퍼 객체에 name 프로퍼티가 동적 추가된다.
+str.name = 'Lee';
+
+// 3. 식별자 str은 다시 원래의 문자열, 즉 래퍼 객체의 [[StringData]] 내부 슬롯에 할당된 원시값을 갖는다.
+// 이때 2에서 생성된 래퍼 객체는 아무도 참조하지 않는 상태이므로 가비지 컬렉션의 대상이 된다.
+
+// 4. 식별자 str 은 새롭게 암묵적으로 생성된 (2에서 생성된 래퍼 객체와는 다른) 래퍼 객체를 가리킨다.
+// 새롭게 생성된 래퍼 객체에는 name 프로퍼티가 존재하지 않는다.
+console.log(str.name); // undefined
+
+// 5 식별자 str은 다시 원래의 문자열, 즉 래퍼 객체의 [[StringData]] 내부 슬롯에 할당된 원시값을 갖는다.
+// 이때 4에서 생성된 래퍼 객체는 아무도 참조하지 않는 상태이므로 가비지 컬렉션의 대상이 된다.
+console.log(typeof str, str);  // string hello
+
