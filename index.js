@@ -3583,3 +3583,438 @@ console.log(str.name); // undefined
 // 이때 4에서 생성된 래퍼 객체는 아무도 참조하지 않는 상태이므로 가비지 컬렉션의 대상이 된다.
 console.log(typeof str, str);  // string hello
 
+
+
+
+
+const num = 1.5;
+
+// 원시 타입인 숫자가 래퍼 객체이 Number 객체로 변환된다.
+console.log(num.toFixed());      // 2
+
+// 래퍼 객체로 프로퍼티에 접근하거나 메서드를 호출한 후, 다시 원시값으로 되돌린다.
+console.log(typeof num, num);    // number 1.5
+
+// ↑ 이처럼 문자열, 숫자, 불리언, 심벌은 암묵적으로 생성되는 래퍼 객체에 의해 마치 객체처럼 사용할 수 있으며, 표준 빌트인 객체인 String, Number, Symbol의 프로토타입 메서드 또는 프로퍼티를
+// 참조할 수 있다. 따라서 String, Number, Symbol 생성자 함수를 new 연사자와 함께 호출하여 문자열, 숫자, 불리언 인스턴스를 생성할 필요가 없으며 권장하지도 않는다. Symbol은 생성자 함수가 아니므로
+// 이 논의에서는 제외하도록 한다.
+// 문자열, 숫자, 불리언, 심벌 이외의 원시값, 즉 null과 undefined는 래퍼 객체를 생성하지 않는다. 따라서 null과 undefined 값을 객체처럼 사용하면 에러가 발생한다.
+
+
+
+// <<< 전역 객체 >>> 21.4
+// 전역 객체는 코드가 실행되기 이전 단계에 자바스크립트 엔진에 의해 어떤 객체보다도 먼저 생성되는 특수한 객체이며, 어떤 객체에도 속하지 않은 최상위 객체다.
+// 전역 객체는 자바스크립트 환경에 따라 지칭하는 이름이 제각각이다. 브라우저 환경에서는 window(또는 self, this, frames)가 전역 객체를 가리키지만 Node.js 환경에서는 global 이 전역 객체를 가리킨다.
+// 전역 객체는 표준 빌트인 객체(Object, String, Number, Function, Array 등)와 환경에 다른 호스트 객체, 그리고 var 키워드로 선언한 전역 변수와 전역 함수를 프로퍼티로 갖는다.
+// 즉, 전역 객체는 계층적 구조상 어떤 객체에도 속하지 않은 모든 빌트인 객체(표준 빌트인 객체와 호스트 객체)의 최상위 객체다. 전역 객체가 최상위 객체라는 것은 프로토타입 상속 관계상에서 최상위 객체
+// 라는 의미가 아니다. 전역 객체 자신은 어떤 객체의 프로퍼티도 아니며 객체의 계층적 구조상 표준 빌트인 객체와 호스트 객체를 프로퍼티로 소유한다는 것을 말한다.
+
+// 전역 객체의 특성
+/*
+- 전역 객체는 개발자가 의도적으로 생성할 수 없다. 즉, 전역 객체를 생성할 수 잇는 생성자 함수가 제공되지 않는다.
+- 전역 객체의 프로퍼티를 참조할 때 window(또는 global)를 생략할 수 있다.
+*/
+
+// 문자열 'F'를 16진수로 해석하여 10진수로 변환하여 반환한다.
+console.log(global.parseInt('F', 16));   // 15   브라우저 환경에서는 전역객체가 global 이 아닌 window이다.
+
+// window.parseInt는 parseInt로 호출할 수 있다.
+console.log(parseInt('F', 16));    // 15   브라우저 환경에서는 전역객체가 global 이 아닌 window이다.
+
+console.log(global.parseInt === parseInt);   // true    브라우저 환경에서는 전역객체가 global 이 아닌 window이다.
+
+
+
+// var 키워드로 선언한 전역 변수와 선언하지 않은 변수에 값을 할당한 암묵적 전역, 그리고 전역 함수는 전역 객체의 프로퍼티가 된다.
+// var 키워드로 선언한 전역 변수
+var foo = 1;
+console.log(global.foo);    // 크롬 개발자툴에서 window로 했을때는 되는데 vs code에서 global로 하면 undefined가 된다.
+
+// 선언하지 않은 변수에 값을 암묵적 전역. bar는 전역 변수가 아니라 전역 객체의 프로퍼티다.
+bar = 2;        
+console.log(global.bar);    // 2
+
+// 전역 함수
+function baz() { return 3; }
+console.log(global.baz());      // 크롬 개발자툴에서 window로 하면 3이 나오지만 , vs code에서 global로 하면 TypeError: global.baz is not a function 가 된다.
+
+
+// ↑ let이나 const 키워드로 선언한 전역 변수는 전역 객체의 프로퍼티가 아니다. 즉,  window.foo와 같이 접근할 수 엇ㅂ다. let이나  const 키워드로 선언한 전역 변수는 보이지 않는 개념적인 블록
+// (전역 렉시컬 환경의 선언적 환경 레코드)내에 존재하게 된다.
+
+let foo = 123;
+console.log(global.foo);  // undefined     브라우저에서는 window.foo 이다.
+
+// 브라우저 환경의 모든 자바스크립트 코드는 하나의 전역 객체 window를 공유한다. 여러 개의 script 태그를 통해 자바스크립트 코드를 분리해도 하나의 전역 객체 window를 공유하는 것은 변함이 없다.
+// 이는 분리되어 있는 자바스크립트 코드가 하나의 전역을 공유한다는 의미다.
+
+
+
+// 전역 객체는 몇 가지 프로퍼티와 메서드를 가지고 있다. 전역 객체의 프로퍼티와 메서드는 전역 객체를 가리키는 식별자, 즉 window나 global을 생략하여 참조/호출할 수 있으므로 전역 변수와 전역 함수
+// 처럼 사용할 수 있다. 
+
+
+// << 빌트인 전역 프로퍼티 >> 21.4.1
+// 빌트인 전역 프로퍼티는 전역 객체의 프로퍼티를 의미한다. 주로 애플리케이션 전역에서 사용하는 값을 제공한다.
+
+// < Infinity > 
+// Infinity 프로퍼티는 무한대를 나타내는 숫자값 Infinity를 갖는다.
+
+// 전역 프로퍼티는 window/global 을 생략하고 참조할 수 있다.
+console.log(global.Infinity === Infinity);   // true
+
+// 양의 무한대
+console.log(3/0);      // Infinity
+
+// 음의 무한대
+console.log(-3/0);   // -Infinity
+
+// Infinity는 숫자값이다.
+console.log(typeof Infinity);   // number
+
+
+
+// < NaN >
+// NaN 프로퍼티는 숫자가 아님(Not-a-Number)을 나타내는 숫자가 NaN을 갖느다. NaN 프로퍼티는 Number.NaN 프로퍼티와 같다.
+console.log(global.NaN);           // NaN
+console.log(Number('xyz'));        // NaN
+console.log(1 * 'string');         // NaN
+console.log(typeof NaN);           // number
+
+
+
+// < undefined > 
+// undefined 프로퍼티는 원시 타입 undefined를 값으로 갖는다.
+console.log(global.undefined);    // undefined    
+
+var foo;
+console.log(foo);    // undefined
+console.log(typeof undefined);    // undefined
+
+
+
+// << 빌트인 전역 함수 >> 21.4.2
+// 빌트인 전역 함수는 애플리케이션 전역에서 호출할 수 있는 빌트인 함수로서 전역 객체의 메서드다.
+
+// < eval >
+// eval 함수는 자바스크립트 코드를 나타내는 문자열을 인수로 전달받는다. 전달받은 문자열 코드가 표현식이라면 eval 함수는 문자열 코드를 런타임에 평가하고 값을 생성하고, 전달받은 인수가 표현식이
+// 아닌 문이라면 eval 함수는 문자열 코드를 런타임에 실행한다. 문자열 코드가 여러 개의 문으로 이루어져 있다면 모드 문을 실행한다.
+
+/**
+ * 주어진 문자열 코드를 런타임에 평가 또는 실행한다.
+ * @parm {string} code - 코드를 나타내는 문자열
+ * @returns {*} 문자열 코드를 평가/실행한 결과값
+ */
+// eval(code)
+
+// 표현식인 문
+eval('1 + 2;');               // 3
+// 표현식이 아닌 문
+eval('var x = 5;');           // undefined
+ 
+// eval 함수에 의해 런타임에 변수 선언문이 실행되어 x 변수가 선언되었다.
+console.log(x);               // 5
+
+// 객체 리터럴은 반드시 괄호로 둘러싼다.
+const o = eval('({ a:1 })');
+console.log(o); 
+
+// 함수 리터럴은 반드시 괄호로 둘러싼다.
+const f = eval('(function() { return 1; })');       // 1
+
+
+
+// < 인수로 전달받은 문자열 코드가 여러 개의 문으로 이루어져 있다면 모든 문을 실행한 다음, 마지막 결과값을 반환한다. >
+console.log(eval('1 + 2; 3 + 4;'));              // 7
+
+
+// < eval 함수는 자신이 호출된 위치에 해당하는 기존의 스콜프를 런타임에 동적으로 수정한다. >
+const x = 1;
+
+function foo() {
+    // eval 함수는 런타임에 foo 함수의 스코프를 동적으로 수정한다.
+    eval('var x = 2;');
+    console.log(x);       // 2
+}
+
+foo();                    // 2
+console.log(x);           // 1
+
+
+
+// < 위 예제의 eval 함수는 새로운 x 변수를 선언하면서 foo 함수의 스코프에 선언된 x 변수를 동적으로 추가한다. 함수가 호출되면 런타임 이전에 먼저 함수 몸체 내부의 모든 선언문을 먼저 실행하고 
+// 그 결과를 스코프에 등록한다. 따라서 위 예제의 eval 함수가 호출되는 시점에는 이미 foo 함수의 스코프가 존재한다. 하지만 eval 함수는 기존의 스코프를 런타임에 동적으로 수정한다.
+// 그리고 eval 함수에 전달된 코드는 이미 그 위치에 존재하던 코드처럼 동작한다. 즉 eval 함수가 호출된 foo 함수의 스코프에서 실행된다. 단 strict mode 에서 eval 함수는 기존의 스코프를 수정하지
+// 않고 eval 함수 자신의 자체적인 스코프를 생성한다.
+const x = 1;
+function foo() {
+    'use strict';
+
+    // strict mode에서 eval 함수는 기존의 스코프를 수정하지 않고 eval 함수 자신의 자체적인 스코프를 생성한다.
+    eval('var x =2; console.log(x);');         // 2
+    console.log(x);                            // 1
+} 
+foo();
+console.log(x);                                // 1
+
+
+
+// < 또한 인수로 전달받은 문자열 코드가 let, const 키워드를 사용한 변수 선언문이라면 암묵적으로 strict mode가 적용된다. >
+const x = 1;
+
+function foo() {
+   eval('var x = 2; console.log(x);');        // 2
+   // let, const 키워드를 사용한 변수 선언문은 strict mode가 적용된다.
+   eval('const x = 3; console.log(x);');      // 3
+   console.log(x);                            // 2
+}
+
+foo();                                        
+console.log(x);                               // 1
+
+/////////// eval 함수를 통해 사용자로부터 입력받은 콘텐츠를 실행하는 것은 보안에 매우 취약하다. 또한 eval 함수를 통해 실행되는 코드는 자바스크립트 엔진에 의해 최적화가 수행되지 않으므로 일반적인 코드 실행에 비해 처리 속도가 느리다. 따라서 eval 함수의 사용은 금지해야 한다.
+
+
+
+
+// < isFinite >
+// 전달받은 인수가 정상적인 유한수인지 검사하여 유한수이면 true를 반환하고, 무한수이면 false를 반환한다. 전달받은 인수의 타입이 숫자가 아닌 경우, 숫자로 타입을 변환한 후 검사를 수행한다. 이때
+// 인수가 NaN으로 평가되는 값이라면 false를 반환한다.
+/**
+ * 전달 받은 인수가 유한수인지 확인하고 그 결과를 반환한다.
+ * @param {number} testValue - 검사 대상 값
+ * @returns {boolean} 유한수 여부 확인 결과
+ */
+// isFinite(testValue)
+
+// 인수가 유한수이면 true를 반환한다.
+console.log(isFinite(0));           // true
+console.log(isFinite(2e64));        // true 
+console.log(isFinite('10'));        // true: '10' -> 10
+console.log(isFinite(null));        // true: null -> 0
+
+// 인수가 무한수 또는 NaN으로 평가되는 값이라면 false를 반환한다.
+console.log(isFinite(Infinity));    // false
+console.log(isFinite(-Infinity));   // false
+
+// 인수가 NaN으로 평가되는 값이라면 false를 반환한다.
+console.log(isFinite(NaN));         // false
+console.log(isFinite('Hello'));     // false
+console.log(isFinite('2005/12/12'));// false
+
+// isFinite(null은 true를 반환한다. 이것은 null을 숫자로 변환하여 검사를 수행했기 때문이다. null을 숫자 타입으로 변환하면 0이 된다.
+console.log(+null);    // 0
+
+
+
+// < isNaN >
+// 전달받은 인수가 NaN인지 검사하여 그 결과를 불리언 타입으로 반환한다. 전달받은 인수의 타입이 숫자가 아닌 경우 숫자로 타입을 변환한 후 검사를 수행한다.
+/**
+ * 주어진 숫자가 NaN인지 확인하고 그 결과를 반환한다.
+ * @param {number} testValue - 결과 대상 값
+ * @returns {boolean} NaN 여부 확인 결과
+ */
+// isNaN(testValue)
+
+// 숫자
+console.log(isNaN(NaN));                                  // true
+console.log(isNaN(10));                                   // false
+
+// 문자열 
+console.log(isNaN('blabla'));                             // true: 'blabla' => NaN
+console.log(isNaN('10'));                                 // false: '10' -> 10
+console.log(isNaN('10.12'));                              // false
+console.log(isNaN(''));                                   // false: '' -> 0
+console.log(isNaN(' '));                                  // false: ' ' -> 0
+
+// 불리언
+console.log(isNaN(true));                                 // false: true -> 1
+console.log(isNaN(null));                                 // false: null -> 0
+
+// undefined
+console.log(isNaN(undefined));                            // true: undefined => null
+
+// 객체
+console.log(isNaN({}));                                   // true: {} => NaN
+
+// date
+console.log(isNaN(new Date()));                           // false: new Date() => Number
+console.log(isNaN(new Date().toString()));                // true: String => NaN
+
+
+
+// < parseFloat >
+// 전달받은 문자열 인수를 부동 소수점 숫자, 즉 실수로 해석하여 반환한다.
+/**
+ * 전달받은 문자열 인수를 실수로 해석하여 반환한다.
+ * @param {string} string - 변환 대상 값
+ * @returns {number} 변환 결과
+ */
+// parseFloat(string)
+
+
+// 문자열을 실수로 해석하여 반환한다.
+console.log(parseFloat('3.14'));                                // 3.14
+console.log(parseFloat('10.00'));                               // 10
+
+// 공백으로 구분된 문자열은 첫 번째 문자열만 변환한다.              
+console.log(parseFloat('34 45 56'));                            // 34
+console.log(parseFloat('40 years'));                            // 40
+
+// 첫 번째 문자열을 숫자로 변환할 수 없다면 NaN을 반환한다.         
+console.log(parseFloat('He was 40'));                           // NaN
+ 
+// 앞뒤 공백은 무시된다.
+console.log(parseFloat(' 60 '));                                // 60
+
+
+
+// < parseInt >
+// 전달받은 문자열 인수를 정수로 해석하여 반환한다.
+/**
+ * 전달받은 문자열 인수를 정수로 해석하여 반환한다.
+ * @param {string} string - 변환 대상 값
+ * @param {number} [radix] - 진법을 나타내는 기수(2~36, 기본값 10)
+ * @returns {number} 변환 결과
+ */
+// parseInt(string, radix);
+
+// 문자열을 정수로 해석하여 반환한다.
+console.log(parseInt('10'));        // 10
+console.log(parseInt('10.123'));    // 10
+
+// 전달받은 인수가 문자열이 아니면 문자열로 변환한 다음, 정수로 해석하여 반환한다.
+console.log(parseInt(10));           // 10
+console.log(parseInt(10.123));       // 10
+
+// 두 번째 인수로 진법을 나타내는 기수(2~36)를 전달할 수 있다. 기수를 지정하면 첫 번째 인수로 전달된 문자열을 해당 기수의 숫자로 해석하여 반환한다. 이때 반환값은 언제나 10진수다. 기수를 생략하면
+// 첫 번째 인수로 전달된 문자열을 10진수로 해석하여 반환한다.
+
+// '10'을 10진수로 해석하고 그 결과를 10진수 정수로 반환한다.
+console.log(parseInt('10'));          // 10
+// '10'을 2진수로 해석하여 그 결과를 10진수 정수로 반환한다.
+console.log(parseInt('10', 2));       // 2
+// '10'을 8진수로 해석하여 그 결과를 10진수 정수로 반환한다.
+console.log(parseInt('10', 8));       // 8
+// '10'을 16진수로 해석하여 그 결과를 10진수 정수로 반환한다.
+console.log(parseInt('10', 16));      // 16
+
+
+
+//// 참고로 기수를 지정하여 10진수 숫자를 해당 기수의 문자열로 변환하여 반환하고 싶을 때는 Number.prototype.toString 메서드를 사용한다.
+const x = 15;
+
+// 10진수 15를 2진수로 변환하여 그 결과를 문자열로 반환한다.
+console.log(x.toString(2));    // '1111'
+// 문자열 '1111'을 2진수로 해석하고 그 결과를 10진수 정수로 반환한다.
+console.log(parseInt(x.toString(2), 2));  // 15
+
+// 10진수 15를 8진수로 변환하여 그 결과를 문자열로 반환한다.
+console.log(x.toString(8));  // '17'
+// 문자열 '17'을 8진수로 해석하고 그 결과를 10진수 정수로 반환한다.
+console.log(parseInt(x.toString(8), 8));  // 15
+
+// 10진수 15를 16진수로 변환하여 그 결과를 문자열로 반환한다.
+console.log(x.toString(16));               // 'f'
+// 문자열 'f'를 16진수로 해석하고 그 결과를 10진수 정수로 반환한다.
+console.log(parseInt(x.toString(16), 16)); // 15
+
+// 숫자값을 문자열로 변환한다.
+console.log(x.toString());             // '15'
+console.log(parseInt(x.toString()));   // 15
+
+
+
+//// 두 번째 인수로 진법을 나타내는 기수를 지정하지 않더라도 첫 번째 인수로 전달된 문자열이 "0x" 또는 "0X"로 시작하는 16진수 리터럴이라면 16진수로 해석하여 10진수 정수로 반환한다.
+// 16진수 리터럴 '0xf'를 16진수로 해석하고 10진수 정수로 그 결과를 반환한다.
+console.log(parseInt('0xf'));     // 15
+// 위 코드와 같다.
+console.log(parseInt('f', 16));   // 15
+
+
+// 하지만 2진수 리터럴과 8진수 리터럴은 제대로 해석하지 못한다.
+// 2진수 리터럴(0b로 시작)은 제대로 해석하지 못한다. 0 이후가 무시된다.
+console.log(parseInt('0b10'));     // 0
+// 8진수 리터럴(ES6에서 도입. 0o로 시작)은 제대로 해석하지 못한다. 0 이후가 무시된다.
+console.log(parseInt('0o10'));     // 0
+
+// 위와 같이 2진수와 8진수는 제대로 해석을 못하므로 반드시 아래와 같이 작성해야 한다.
+// 문자열 '10'을 2진수로 해석한다.
+console.log(parseInt('10', 2));
+// 문자열 '10'을 8진수로 해석한다.
+console.log(parseInt('10', 8));
+
+
+
+// 첫 번째 인수로 전달한 문자열의 첫 번째 문자가 해당 지수의 숫자로 변환될 수 없다면 NaN을 반환한다.
+// 'A'는 10진수로 해석할 수 없다.   
+console.log(parseInt('A0'));        // NaN
+// '2'는 2진수로 해석할 수 없다.
+console.log(parseInt('20', 2));     // NaN
+
+
+// 하지만 첫 번째 인수로 전달한 문자열의 두 번째 문자부터 해당 진수를 나타내는 숫자가 아닌 문자(예를 들어 2진수의 경우 2)와 마주치면 이 문자와 계속되는 문자들은 전부 무시되며 해석된 정수값만 반환한다.
+// 10진수로 해석할 수 없는 'A' 이후의 문자는 모두 무시된다.
+console.log(parseInt('1A0'));          // 1
+// 2진수로 해석할 수 없는 '2' 이후의 문자는 모두 무시된다.
+console.log(parseInt('102', 2));       // 2
+// 8진수로 해석할 수 없는 '8' 이후의 문자는 모두 무시된다.
+console.log(parseInt('58', 8));        // 5
+
+
+
+// << 암묵적 전역 >> 21.4.3
+var x = 10;
+
+function foo() {
+    // 선언하지 않은 식별자에 값을 할당
+    y = 20; // window.y = 20;
+}
+foo();
+
+// 선언하지 않은 식별자 y를 전역에서 참조할 수 있다.
+console.log(x + y);
+
+// ↑ foo 함수 내의 y는 선언하지 않은 식별자다. 따라서 y = 20이 실행되면 참조 에러가 발생할 것처럼 보인다. 하지만 선언하지 않은 식별자 y는 마치 선언된 전역 변수처럼 동작한다. 이는 선언하지 않은
+// 식별자에 값을 할당하면 전역 객체의 프로퍼티가 되기 때문이다. 
+// foo 함수가 호출되면 자바스크립트 엔진은 y변수에 값을 할당하기 위해 먼저 스코프 체인을 통해 선언된 변수인지 확인한다. 하지만 자바스크립트 엔진은 y = 20 을 window.y = 20 으로 해석하여 전역 객체에
+// 프로퍼티를 동적 생성한다. 결국 y는 전역 객체의 프로퍼티가 되어 마치 전역 변수처럼 동작한다. 이러한 현상을 암묵적 전역이라 한다. 하지만 y는 변수 선언 없이 단지 전역 객체의 프로퍼티로 추가되었을 
+// 뿐이다. 따라서 y는 변수가 아니다. y는 변수가 아니므로 변수 호이스팅이 발생하지 않는다.
+
+// 전역 변수 x는 호이스팅이 발생한다.
+console.log(x);  // undefined
+// 전역 변수가 아니라 단지 전역 객체의 프로퍼티인 y는 호이스팅이 발생하지 않는다.
+console.log(y);  // ReferenceError: y is not defined
+
+
+var x = 10;
+
+function foo() {
+    // 선언하지 않은 식별자에 값을 할당
+    y = 20;      // window.y = 20;
+}
+foo();
+
+// 선언하지 않은 식별자 y를 전역에서 참조할 수 있다.
+console.log(x+y);  // 30
+
+// 또한 변수가 아니라 단지 프로퍼티인 y는 delete 연산자로 삭제할 수 있다. 전역 변수는 프로퍼티이지만 delete 연산자로 삭제할 수 없다.
+var x = 10;   // 전역 변수
+
+function foo() {
+    // 선언하지 않은 식별자에 값을 할당
+    y = 20;  // window.y = 20;
+    console.log(x + y);   
+}
+
+foo();    // 30
+
+console.log(window.x);    // 10
+console.log(window.y);    // 20
+
+delete x;    // 전역 변수는 삭제되지 않는다.
+delete y;    // 프로퍼티는 삭제된다.
+
+console.log(window.x);    // 10
+console.log(window.y);    // 20
+
